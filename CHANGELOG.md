@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-02-28
 
-### Added
+### Added (Iteration 7 — E2E Testing, Performance & Final Release)
+- **E2E test suite** — Playwright tests for dashboard UI, API endpoints, auth flows, SIEM export, console API
+- **E2E CI workflow** — GitHub Actions workflow for automated E2E testing against full Docker Compose stack
+- **Response cache service** — in-memory LRU cache with TTL for expensive API responses (stats, map data)
+- **Custom 404 page** — styled not-found page with navigation back to dashboard
+- **Deployment matrix** — comprehensive documentation for Docker, K8s/Helm, RPi, Proxmox, bare metal deployments
+- **Security audit checklist** — pre-release security review for v1.0.0 with findings and recommendations
+- **Cache tests** — 11 unit tests for cache service
+
+### Added (Iteration 6 — Edge Deployment & Community Launch)
 - **GitHub Release workflow** — automated release with multi-arch Docker images, changelog extraction, sensor compose artifact
 - **Raspberry Pi one-click setup** — `scripts/rpi-setup.sh` with architecture detection, Docker install, password generation, and deployment
 - **Hosted console API stubs** — `/api/v1/console/` endpoints for future multi-deployment management (stats, deployments, license, heartbeat)
@@ -20,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All versions bumped to 1.0.0 (backend, frontend, Helm chart, metrics, health endpoint)
 - README updated with v1.0.0 features and completed roadmap
 - Helm chart appVersion bumped to 1.0.0
+
+### Fixed
+- Bandit B108 false positive (hardcoded /tmp expected in Docker)
+- Bandit CI severity flags (-ll → -lll for HIGH+ only)
+- FastAPI Query `regex=` deprecation → `pattern=` (Python 3.12 compat)
+- Trivy scan split: informational for base image, fail for app code only
+- pytest deprecation warning filters for passlib and pydantic
 
 ## [0.6.0] - 2026-02-28
 

@@ -187,6 +187,37 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 4** — Advanced: Kubernetes/Helm, honey tokens, webhooks, plugins, RPi blueprints
 - [x] **Iteration 5** — Production: Prometheus/Grafana, security scanning, SIEM export, rate limiting, audit logging
 - [x] **Iteration 6** — v1.0.0: Release workflow, RPi one-click setup, console API, community governance, plugin template
+- [x] **Iteration 7** — Final: E2E testing (Playwright), performance caching, deployment matrix, security audit, v1.0 release
+
+## Features (Iteration 7 — E2E Testing, Performance & Final Release)
+
+### E2E Test Suite (Playwright)
+- **Dashboard tests** — login flow, navigation, stats cards, live feed, accessibility checks
+- **API tests** — health, auth, sessions, alerts, honey tokens, webhooks, console, SIEM export
+- **E2E CI workflow** — automated Playwright tests against full Docker Compose stack
+- **Cross-browser** — Chromium desktop + Pixel 5 mobile viewport
+
+### Performance Optimization
+- **Response cache** — in-memory LRU cache with TTL for expensive API calls (stats, map data)
+- **Query optimization** — connection pooling tuning, parameterized queries
+- **Light profile <500MB RAM** — resource-optimized for edge deployments
+
+### Deployment Matrix
+- **[Docker Compose](docs/deployment-matrix.md#1-docker-compose-recommended)** — light and full profiles with resource tables
+- **[Kubernetes/Helm](docs/deployment-matrix.md#2-kubernetes--helm)** — production values, ingress, cert-manager
+- **[Raspberry Pi](docs/deployment-matrix.md#3-raspberry-pi)** — one-click setup, hardware compatibility matrix
+- **[Proxmox LXC](docs/deployment-matrix.md#4-proxmox-lxc-container)** — unprivileged container with nesting
+- **[Bare Metal](docs/deployment-matrix.md#5-bare-metal)** — systemd services, manual install steps
+
+### Security Audit
+- **[Pre-release checklist](docs/security-audit-v1.md)** — auth, input validation, network, data protection, CI/CD
+- **Known limitations** documented with mitigations
+- **Production recommendations** for secure deployment
+
+### v1.0.0 Final
+- 146+ tests passing (11 new cache tests + E2E suite)
+- Custom 404 page
+- Full CI pipeline: lint, build, test, security scan, E2E
 
 ## Features (Iteration 6 — v1.0.0 Release)
 
