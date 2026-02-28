@@ -197,10 +197,16 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **E2E CI workflow** — automated Playwright tests against full Docker Compose stack
 - **Cross-browser** — Chromium desktop + Pixel 5 mobile viewport
 
+<!-- TODO: Add GIF: Playwright E2E test run with all tests passing -->
+<!-- ![E2E Tests](docs/assets/e2e-tests.gif) -->
+
 ### Performance Optimization
 - **Response cache** — in-memory LRU cache with TTL for expensive API calls (stats, map data)
 - **Query optimization** — connection pooling tuning, parameterized queries
 - **Light profile <500MB RAM** — resource-optimized for edge deployments
+
+<!-- TODO: Add screenshot: Lighthouse audit score 95+ -->
+<!-- ![Lighthouse Score](docs/assets/lighthouse-score.png) -->
 
 ### Deployment Matrix
 - **[Docker Compose](docs/deployment-matrix.md#1-docker-compose-recommended)** — light and full profiles with resource tables
@@ -226,6 +232,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Multi-arch images** — builds and pushes `linux/amd64` + `linux/arm64` Docker images to GHCR
 - **Semantic tags** — images tagged with `v1.0.0`, `v1.0`, `v1`, and `latest`
 - **Sensor compose artifact** — standalone `docker-compose.sensor.yml` attached to each release
+
+<!-- TODO: Add GIF: Deployment matrix — RPi sensor coming online in fleet dashboard -->
+<!-- ![Deployment Matrix](docs/assets/deployment-matrix.gif) -->
 
 ### Raspberry Pi One-Click Setup
 - **`scripts/rpi-setup.sh`** — detects ARM64, installs Docker, generates passwords, deploys HoneyAegis

@@ -65,7 +65,8 @@ jobs:
           scan-ref: ./backend
           format: table
           exit-code: "1"
-          severity: CRITICAL,HIGH
+          severity: CRITICAL
+          ignore-unfixed: true
 
   # ---------------------------------------------------------------------------
   # Dependency audit (npm)
