@@ -19,6 +19,8 @@ from app.models.session import Session
 from app.models.event import Event
 from app.models.command import Command
 from app.models.download import Download
+from app.models.sensor import Sensor
+from app.models.tenant import Tenant
 from app.services.geoip_service import lookup_ip
 
 logger = logging.getLogger(__name__)
@@ -89,6 +91,25 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
     if event_id == "cowrie.session.connect":
         geo = await _persist_geoip(db, src_ip) if src_ip else {}
 
+        # Resolve tenant_id: try sensor first, then fall back to default tenant
+        tenant_id = None
+        sensor_id_str = event_data.get("sensor")
+        if sensor_id_str:
+            sensor_result = await db.execute(
+                select(Sensor).where(Sensor.sensor_id == sensor_id_str)
+            )
+            sensor = sensor_result.scalar_one_or_none()
+            if sensor:
+                tenant_id = sensor.tenant_id
+
+        if tenant_id is None:
+            default_tenant = await db.execute(
+                select(Tenant).where(Tenant.slug == "default")
+            )
+            t = default_tenant.scalar_one_or_none()
+            if t:
+                tenant_id = t.id
+
         session = Session(
             id=uuid4(),
             session_id=session_key,
@@ -97,6 +118,7 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
             src_port=event_data.get("src_port"),
             dst_port=event_data.get("dst_port"),
             started_at=ts,
+            tenant_id=tenant_id,
             country_code=geo.get("country_code"),
             country_name=geo.get("country_name"),
             city=geo.get("city"),

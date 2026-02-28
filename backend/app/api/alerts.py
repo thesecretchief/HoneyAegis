@@ -1,4 +1,4 @@
-"""Alert endpoints — list, acknowledge, and manage alerts."""
+"""Alert endpoints — list, acknowledge, and manage alerts (tenant-scoped)."""
 
 from uuid import UUID
 
@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update
 
 from app.core.database import get_db
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, get_tenant_id
 from app.models.alert import Alert
 from app.models.user import User
 from app.schemas.alert import AlertResponse, AlertListResponse
@@ -22,9 +22,9 @@ async def list_alerts(
     severity: str | None = None,
     acknowledged: bool | None = None,
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
-    query = select(Alert).order_by(Alert.created_at.desc())
+    query = select(Alert).where(Alert.tenant_id == tenant_id).order_by(Alert.created_at.desc())
     if severity:
         query = query.where(Alert.severity == severity)
     if acknowledged is not None:
@@ -34,7 +34,9 @@ async def list_alerts(
     result = await db.execute(query)
     alerts = result.scalars().all()
 
-    count_result = await db.execute(select(func.count(Alert.id)))
+    count_result = await db.execute(
+        select(func.count(Alert.id)).where(Alert.tenant_id == tenant_id)
+    )
     total = count_result.scalar()
 
     return AlertListResponse(alerts=alerts, total=total or 0)
@@ -45,8 +47,11 @@ async def acknowledge_alert(
     alert_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
-    result = await db.execute(select(Alert).where(Alert.id == alert_id))
+    result = await db.execute(
+        select(Alert).where(Alert.id == alert_id, Alert.tenant_id == tenant_id)
+    )
     alert = result.scalar_one_or_none()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
@@ -62,10 +67,11 @@ async def acknowledge_alert(
 async def acknowledge_all_alerts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     await db.execute(
         update(Alert)
-        .where(Alert.acknowledged.is_(False))
+        .where(Alert.tenant_id == tenant_id, Alert.acknowledged.is_(False))
         .values(acknowledged=True, acknowledged_by=current_user.id)
     )
     await db.commit()

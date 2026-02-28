@@ -38,7 +38,7 @@ export default function RootLayout({
               <NavItem href="/config" label="Config" />
             </ul>
             <div className="mt-auto pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-600">HoneyAegis v0.3.0</p>
+              <p className="text-xs text-gray-600">HoneyAegis v0.4.0</p>
             </div>
           </nav>
           {/* Mobile nav */}

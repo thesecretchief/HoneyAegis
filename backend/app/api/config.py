@@ -1,15 +1,13 @@
-"""Configuration endpoints — platform settings management."""
+"""Configuration endpoints — platform settings management (tenant-scoped)."""
 
 import logging
-from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.database import get_db
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, get_tenant_id
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -51,7 +49,7 @@ class PlatformConfig(BaseModel):
 
 @router.get("/", response_model=PlatformConfig)
 async def get_config(
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Get the current platform configuration."""
     return PlatformConfig(
@@ -103,7 +101,7 @@ class UpdateAlertRulesRequest(BaseModel):
 @router.patch("/alerts")
 async def update_alert_rules(
     request: UpdateAlertRulesRequest,
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Update alert rule settings (runtime only — persists until restart)."""
     if request.alert_on_new_session is not None:

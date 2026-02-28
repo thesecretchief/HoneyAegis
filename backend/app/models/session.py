@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Boolean, Integer, Float, DateTime
+from sqlalchemy import String, Boolean, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import INET, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,6 +14,9 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[uuid.UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE")
+    )
     session_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     sensor_id: Mapped[uuid.UUID | None] = mapped_column(PG_UUID(as_uuid=True))
     protocol: Mapped[str] = mapped_column(String(20), nullable=False)

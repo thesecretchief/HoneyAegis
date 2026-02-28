@@ -12,12 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
-from app.api.auth import get_current_user
+from app.api.auth import get_tenant_id
 from app.api.replay import parse_ttylog, COWRIE_TTY_BASE
 from app.models.session import Session
 from app.models.command import Command
 from app.models.download import Download
-from app.models.user import User
 from app.services.ai_service import generate_video_overlay
 
 logger = logging.getLogger(__name__)
@@ -33,13 +32,15 @@ async def export_session_video(
     session_id: UUID,
     format: str = Query("mp4", regex="^(mp4|gif)$"),
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Export a session recording as MP4 or GIF video.
 
     Checks cache first, then generates on the fly using the video converter.
     """
-    result = await db.execute(select(Session).where(Session.id == session_id))
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.tenant_id == tenant_id)
+    )
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")

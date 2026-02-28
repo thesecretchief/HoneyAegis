@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal
 from app.core.config import settings
 from app.core.database import engine, Base
 
@@ -39,13 +39,30 @@ async def lifespan(app: FastAPI):
 
 
 async def _ensure_admin_user():
-    """Create the default admin user on first run."""
+    """Create the default tenant and admin user on first run."""
     from sqlalchemy import select
     from app.core.database import async_session
     from app.core.security import get_password_hash
+    from app.models.tenant import Tenant
     from app.models.user import User
 
     async with async_session() as db:
+        # Ensure default tenant exists
+        result = await db.execute(select(Tenant).where(Tenant.slug == "default"))
+        tenant = result.scalar_one_or_none()
+        if tenant is None:
+            tenant = Tenant(
+                slug="default",
+                name="Default Organization",
+                display_name="HoneyAegis",
+                primary_color="#f59e0b",
+                is_active=True,
+            )
+            db.add(tenant)
+            await db.flush()
+            logger.info("Created default tenant")
+
+        # Ensure admin user exists
         result = await db.execute(select(User).where(User.email == settings.admin_email))
         if result.scalar_one_or_none() is None:
             admin = User(
@@ -54,10 +71,12 @@ async def _ensure_admin_user():
                 full_name="Admin",
                 is_active=True,
                 is_superuser=True,
+                tenant_id=tenant.id,
             )
             db.add(admin)
-            await db.commit()
             logger.info("Created default admin user: %s", settings.admin_email)
+
+        await db.commit()
 
 
 async def _start_log_watcher():
@@ -74,7 +93,7 @@ async def _start_log_watcher():
 app = FastAPI(
     title="HoneyAegis API",
     description="Professional-grade honeypot platform API",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -99,3 +118,6 @@ app.include_router(websocket.router, tags=["websocket"])
 app.include_router(ai.router, prefix="/api/v1/sessions", tags=["ai"])
 app.include_router(sensors.router, prefix="/api/v1/sensors", tags=["sensors"])
 app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
+app.include_router(tenants.router, prefix="/api/v1/tenants", tags=["tenants"])
+app.include_router(reports.router, prefix="/api/v1/reports", tags=["reports"])
+app.include_router(client_portal.router, prefix="/api/v1/client", tags=["client-portal"])

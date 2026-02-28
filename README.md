@@ -73,6 +73,8 @@ docker compose up -d
 OLLAMA_ENABLED=true docker compose --profile full up -d
 ```
 
+> **RAM Note:** The full profile with Ollama requires **4 GB+ RAM**. The phi3:mini model uses ~1.5 GB during inference. On systems with less RAM, use the light profile (2 GB minimum) which skips AI but keeps all other features.
+
 ### 4. Verify deployment
 
 ```bash
@@ -165,13 +167,63 @@ cd backend && pytest
 cd frontend && npm test
 ```
 
+### One-Click Install
+
+```bash
+curl -sSL https://raw.githubusercontent.com/thesecretchief/HoneyAegis/main/scripts/install.sh | bash
+```
+
+The installer checks prerequisites, clones the repo, generates secure passwords, and starts the light profile automatically.
+
 ## Roadmap
 
 - [x] **Iteration 0** — Foundation: repo skeleton, Docker Compose, Cowrie, CI/CD
 - [x] **Iteration 1** — MVP: session capture, real-time dashboard, alerts, GeoIP, video export
 - [x] **Iteration 2** — Enhanced: local AI summaries, fleet management, config UI, polish
-- [ ] **Iteration 3** — MSP: multi-tenant, client portals, reports
+- [x] **Iteration 3** — MSP: multi-tenant, client portals, PDF/JSON reports, auto-update
 - [ ] **Iteration 4+** — Kubernetes, honey tokens, plugin marketplace
+
+## Features (Iteration 3 — MSP Ready)
+
+### Multi-Tenant Isolation
+- **Tenant-scoped data** — every table has `tenant_id`, enforced at the query level
+- **JWT tenant claims** — tenant context propagated through authentication
+- **Cross-tenant protection** — sensors, sessions, alerts fully isolated between tenants
+- **Default tenant** — single-tenant deployments work out of the box
+
+### White-Label Branding
+- **Per-tenant branding** — custom logo, primary color, display name
+- **Client portal theming** — branding applied to view-only portals
+- **Report branding** — PDF reports include tenant logo and colors
+
+### Client Portals
+- **View-only access** — clients see their incidents without configuration access
+- **No auth required** — portals identified by tenant slug (`/client/acme-corp`)
+- **Real-time stats** — attack counts, unique IPs, alert status
+- **Session table** — browseable attack sessions with filtering
+- **Auto-refresh** — portals update every 30 seconds
+
+### PDF/JSON Forensic Reports
+- **WeasyPrint PDF** — polished, styled reports with session data + AI summaries
+- **Single session** — detailed report for one specific attack session
+- **Aggregate** — summary report across all sessions for a tenant
+- **MITRE ATT&CK** — TTP mapping included in reports
+- **One-click export** — download buttons on session detail page
+
+### Auto-Update System
+- **Update script** — `./scripts/update.sh` pulls code + images and recreates containers
+- **Cron support** — `./scripts/update.sh --auto` for unattended daily updates
+- **Version tracking** — git-based versioning with update log
+
+### One-Click Installer
+- **curl | bash** — single command deploys HoneyAegis from scratch
+- **Prerequisite checks** — verifies Docker and Docker Compose
+- **Secure by default** — auto-generates random passwords for all services
+- **Credential display** — shows admin password once at install time
+
+### Security Documentation
+- **[SECURITY.md](SECURITY.md)** — vulnerability reporting, security architecture
+- **[MSP Guide](docs/msp-guide.md)** — tenant setup, branding, sensor registration, scaling
 
 ## Features (Iteration 2 — Enhanced)
 
@@ -267,7 +319,9 @@ We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for
 
 HoneyAegis is designed to be deployed as a honeypot — it intentionally exposes services to attract attackers. **Always deploy on isolated networks and never on production infrastructure.**
 
-To report security vulnerabilities, please open a private security advisory on GitHub.
+See [SECURITY.md](SECURITY.md) for our security policy, architecture details, and deployment checklist.
+
+To report security vulnerabilities, please see [SECURITY.md](SECURITY.md) or open a private security advisory on GitHub.
 
 ## Project Rules
 

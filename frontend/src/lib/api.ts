@@ -332,6 +332,46 @@ export async function updateAlertRules(data: {
   });
 }
 
+// -- Reports API ------------------------------------------------------------
+
+export function getReportJsonUrl(sessionId?: string): string {
+  const qs = sessionId ? `?session_id=${sessionId}` : "";
+  return `${API_BASE}/api/v1/reports/json${qs}`;
+}
+
+export function getReportPdfUrl(sessionId?: string): string {
+  const qs = sessionId ? `?session_id=${sessionId}` : "";
+  return `${API_BASE}/api/v1/reports/pdf${qs}`;
+}
+
+// -- Tenants API ------------------------------------------------------------
+
+export interface TenantBranding {
+  id: string;
+  slug: string;
+  name: string;
+  display_name: string | null;
+  primary_color: string;
+  logo_url: string | null;
+}
+
+export async function getTenantBranding(): Promise<TenantBranding> {
+  return apiFetch<TenantBranding>("/api/v1/tenants/branding");
+}
+
+export async function updateTenantBranding(data: {
+  display_name?: string;
+  primary_color?: string;
+  logo_url?: string;
+}): Promise<TenantBranding> {
+  // We need the tenant ID first
+  const branding = await getTenantBranding();
+  return apiFetch<TenantBranding>(`/api/v1/tenants/${branding.id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 // -- WebSocket --------------------------------------------------------------
 
 export function connectWebSocket(
