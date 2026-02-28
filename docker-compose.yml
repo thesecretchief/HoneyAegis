@@ -1,5 +1,3 @@
-version: "3.9"
-
 # =============================================================================
 # HoneyAegis Docker Compose
 # Light profile (default): postgres, redis, cowrie, backend, frontend

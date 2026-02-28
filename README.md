@@ -197,6 +197,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Auto-detection** — ingestion pipeline automatically checks login attempts against active tokens
 - **Dashboard UI** — create, manage, and monitor tokens from the web interface
 
+<!-- TODO: Add GIF: honey token creation and trigger alert -->
+<!-- ![Honey Token Trigger](docs/assets/honey-token-trigger.gif) -->
+
 ### Auto-Response Webhooks
 - **Event-driven hooks** — trigger HTTP webhooks on alerts, sessions, honey tokens, or malware captures
 - **Severity filtering** — fire webhooks only for specific severity levels
@@ -204,6 +207,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Test endpoint** — verify webhook connectivity from the dashboard
 - **Execution tracking** — monitor delivery status, response codes, and execution counts
 - **Multi-service** — connect to Slack, Discord, PagerDuty, custom APIs
+
+<!-- TODO: Add GIF: webhook test payload delivery -->
+<!-- ![Webhook Test](docs/assets/webhook-test.gif) -->
 
 ### Plugin System
 - **Python plugins** — drop `.py` files into `/plugins` to extend HoneyAegis
@@ -220,6 +226,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Ingress support** — TLS termination via cert-manager / Let's Encrypt
 - **Secret management** — Kubernetes secrets for all sensitive values
 
+<!-- TODO: Add GIF: Helm chart deployment on minikube -->
+<!-- ![Helm Deploy](docs/assets/helm-deploy.gif) -->
+
 ### Raspberry Pi Blueprints
 - **Hardware guide** — RPi 4/5 sensor deployment (2GB+ RAM)
 - **Docker-native** — multi-arch images (amd64 + arm64) work out of the box
@@ -227,6 +236,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Network placement** — VLAN isolation, port forwarding, security best practices
 - **Fleet integration** — register RPi as a remote sensor via the hub API
 - **Auto-start** — systemd + Docker restart policies for unattended operation
+
+<!-- TODO: Add GIF: RPi sensor registration in fleet dashboard -->
+<!-- ![RPi Sensor](docs/assets/rpi-sensor.gif) -->
 
 See [docs/rpi-blueprint.md](docs/rpi-blueprint.md) for the full deployment guide.
 
