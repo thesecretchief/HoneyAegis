@@ -1,8 +1,9 @@
 """Event endpoints — attacker actions within sessions."""
 
+import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -11,6 +12,8 @@ from app.api.auth import get_current_user
 from app.models.event import Event
 from app.models.user import User
 from app.schemas.event import EventResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -33,3 +36,30 @@ async def list_events(
 
     result = await db.execute(query)
     return result.scalars().all()
+
+
+@router.post("/ingest")
+async def ingest_event(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Ingest endpoint for Vector log shipper (full profile).
+
+    Accepts Cowrie JSON events shipped by Vector and processes them
+    through the ingestion pipeline.
+    """
+    from app.services.ingestion_service import process_cowrie_event
+    from app.api.websocket import broadcast_event
+
+    try:
+        event_data = await request.json()
+    except Exception:
+        return {"status": "error", "detail": "Invalid JSON"}
+
+    broadcast_data = await process_cowrie_event(event_data, db)
+    await db.commit()
+
+    if broadcast_data:
+        await broadcast_event(broadcast_data)
+
+    return {"status": "ok"}

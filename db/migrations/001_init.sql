@@ -57,7 +57,12 @@ CREATE TABLE IF NOT EXISTS sessions (
     commands_count INTEGER DEFAULT 0,
     started_at TIMESTAMPTZ NOT NULL,
     ended_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    country_code VARCHAR(2),
+    country_name VARCHAR(100),
+    city VARCHAR(255),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION
 );
 
 -- Convert sessions to a TimescaleDB hypertable for efficient time-series queries

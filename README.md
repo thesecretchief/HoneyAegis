@@ -54,8 +54,8 @@ HoneyAegis turns any VPS, homelab server, or Raspberry Pi into a professional-gr
 ### 1. Clone and configure
 
 ```bash
-git clone https://github.com/honeyaegis/honeyaegis.git
-cd honeyaegis
+git clone https://github.com/thesecretchief/HoneyAegis.git
+cd HoneyAegis
 cp .env.example .env
 # Edit .env with your settings (timezone, passwords, alert endpoints)
 ```
@@ -72,10 +72,18 @@ docker compose up -d
 docker compose --profile full up -d
 ```
 
-### 4. Access the dashboard
+### 4. Verify deployment
+
+```bash
+docker compose ps   # all services should show "Up (healthy)"
+```
+
+### 5. Access the dashboard
 
 Open `http://your-server:3000` in your browser.
 Default credentials: `admin` / `changeme` (change immediately).
+
+> **Security Warning:** Never expose honeypot ports (22/23) on production internet-facing servers. Always deploy HoneyAegis on an isolated network segment or behind a cloud firewall. The honeypot intentionally attracts malicious traffic — keep it separated from real infrastructure.
 
 ## Architecture
 
@@ -159,10 +167,44 @@ cd frontend && npm test
 ## Roadmap
 
 - [x] **Iteration 0** — Foundation: repo skeleton, Docker Compose, Cowrie, CI/CD
-- [ ] **Iteration 1** — MVP: session capture, dashboard, alerts, GeoIP
+- [x] **Iteration 1** — MVP: session capture, real-time dashboard, alerts, GeoIP, video export
 - [ ] **Iteration 2** — AI integration, fleet management, config UI
 - [ ] **Iteration 3** — MSP: multi-tenant, client portals, reports
 - [ ] **Iteration 4+** — Kubernetes, honey tokens, plugin marketplace
+
+## Features (Iteration 1 MVP)
+
+### Real-Time Dashboard
+- **Live stats cards** — attacks today, unique IPs, auth successes, active sensors
+- **WebSocket live feed** — real-time event stream from honeypot
+- **Top countries / ports / usernames** — aggregated attack intelligence
+- **Auto-refresh** — dashboard polls every 15 seconds
+
+### Animated Attack Map
+- **Leaflet** map with dark CARTO tiles
+- **GeoIP enrichment** — IPs resolved to country, city, lat/lon via MaxMind GeoLite2 or ip-api.com fallback
+- **Circle markers** — size scaled by session count, clickable popups with details
+
+### Session Capture & Replay
+- **Full Cowrie tty recording** — SSH/Telnet keystrokes captured
+- **Asciinema-style replay** — play back attacker sessions in the browser terminal
+- **Command history** — every command captured and indexed
+- **Video export** — download session as MP4 or GIF (ffmpeg-powered)
+
+### Incidents List
+- **Sortable, filterable table** — protocol, source IP, location, duration, commands
+- **Risk scoring** — automatic Low/Medium/High/Critical based on auth success, commands, duration
+- **Pagination** — handle thousands of sessions efficiently
+
+### Alerting
+- **Apprise integration** — email, Slack, Discord, ntfy, Gotify, Teams, SMS (Twilio)
+- **Celery-powered** — async alert delivery on new sessions and malware captures
+- **Configurable** — per-channel alert thresholds via `.env`
+
+### Enrichment
+- **GeoIP** — MaxMind GeoLite2 local DB or free ip-api.com fallback
+- **AbuseIPDB** — optional reputation scoring (requires free API key)
+- **Cached** — results stored in PostgreSQL to minimize API calls
 
 ## Contributing
 
@@ -179,6 +221,10 @@ We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for
 HoneyAegis is designed to be deployed as a honeypot — it intentionally exposes services to attract attackers. **Always deploy on isolated networks and never on production infrastructure.**
 
 To report security vulnerabilities, please open a private security advisory on GitHub.
+
+## Project Rules
+
+See [CLAUDE.md](CLAUDE.md) for development rules, conventions, and agent instructions.
 
 ## License
 
