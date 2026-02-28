@@ -1,0 +1,15 @@
+# HoneyAegis Cowrie User Database
+# Format: username:uid:password
+# Use * for any password, ! to deny, specific passwords to allow
+#
+# Common credentials attackers try:
+root:0:!
+root:0:*
+admin:0:*
+user:1000:*
+ubuntu:1000:*
+test:1000:*
+guest:1000:*
+oracle:1000:*
+pi:1000:*
+ftpuser:1000:*

@@ -1,0 +1,309 @@
+version: "3.9"
+
+# =============================================================================
+# HoneyAegis Docker Compose
+# Light profile (default): postgres, redis, cowrie, backend, frontend
+# Full profile: adds ollama, vector, traefik, opencanary, dionaea, grafana
+# =============================================================================
+# Usage:
+#   Light:  docker compose up -d
+#   Full:   docker compose --profile full up -d
+# =============================================================================
+
+x-common-env: &common-env
+  TZ: ${HONEYAEGIS_TIMEZONE:-UTC}
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL + TimescaleDB
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: honeyaegis-postgres
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      POSTGRES_DB: ${POSTGRES_DB:-honeyaegis}
+      POSTGRES_USER: ${POSTGRES_USER:-honeyaegis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-honeyaegis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: honeyaegis-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-change-me-redis-password}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-change-me-redis-password}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Cowrie SSH/Telnet Honeypot
+  # ---------------------------------------------------------------------------
+  cowrie:
+    build:
+      context: ./honeypots/cowrie
+      dockerfile: Dockerfile
+    container_name: honeyaegis-cowrie
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      COWRIE_HOSTNAME: ${COWRIE_HOSTNAME:-svr04}
+    volumes:
+      - cowrie_logs:/var/log/cowrie
+      - cowrie_downloads:/var/lib/cowrie/downloads
+      - ./honeypots/cowrie/etc/cowrie.cfg:/cowrie/cowrie-git/etc/cowrie.cfg:ro
+      - ./honeypots/cowrie/etc/userdb.txt:/cowrie/cowrie-git/etc/userdb.txt:ro
+    ports:
+      - "${COWRIE_EXTERNAL_SSH_PORT:-2222}:2222"
+      - "${COWRIE_EXTERNAL_TELNET_PORT:-2223}:2223"
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks:
+      - honeyaegis-honeypot
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Backend (FastAPI)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: honeyaegis-backend
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      HONEYAEGIS_ENV: ${HONEYAEGIS_ENV:-production}
+      HONEYAEGIS_DEBUG: ${HONEYAEGIS_DEBUG:-false}
+      HONEYAEGIS_SECRET_KEY: ${HONEYAEGIS_SECRET_KEY:-change-me-to-a-random-64-char-string}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-honeyaegis}
+      POSTGRES_USER: ${POSTGRES_USER:-honeyaegis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres-password}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-to-a-random-jwt-secret}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@honeyaegis.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
+      OLLAMA_PORT: ${OLLAMA_PORT:-11434}
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+    volumes:
+      - cowrie_logs:/data/cowrie_logs:ro
+      - cowrie_downloads:/data/cowrie_downloads:ro
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Frontend (Next.js)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: honeyaegis-frontend
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://backend:8000/ws}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker (background tasks)
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: honeyaegis-worker
+    restart: unless-stopped
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      <<: *common-env
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-honeyaegis}
+      POSTGRES_USER: ${POSTGRES_USER:-honeyaegis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres-password}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
+      OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
+      OLLAMA_PORT: ${OLLAMA_PORT:-11434}
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+    volumes:
+      - cowrie_logs:/data/cowrie_logs:ro
+      - cowrie_downloads:/data/cowrie_downloads:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+  # ===========================================================================
+  # FULL PROFILE SERVICES (docker compose --profile full up -d)
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # Vector (Log Shipper)
+  # ---------------------------------------------------------------------------
+  vector:
+    image: timberio/vector:0.41.1-alpine
+    container_name: honeyaegis-vector
+    restart: unless-stopped
+    profiles:
+      - full
+    environment:
+      <<: *common-env
+      VECTOR_LOG: ${VECTOR_LOG_LEVEL:-info}
+    volumes:
+      - ./configs/vector/vector.yaml:/etc/vector/vector.yaml:ro
+      - cowrie_logs:/var/log/cowrie:ro
+    depends_on:
+      - backend
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Ollama (Local AI)
+  # ---------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: honeyaegis-ollama
+    restart: unless-stopped
+    profiles:
+      - full
+    environment:
+      <<: *common-env
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Traefik Reverse Proxy
+  # ---------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.2
+    container_name: honeyaegis-traefik
+    restart: unless-stopped
+    profiles:
+      - full
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesResolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL:-admin@example.com}"
+      - "--certificatesResolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Grafana (Monitoring Dashboard)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11-alpine
+    container_name: honeyaegis-grafana
+    restart: unless-stopped
+    profiles:
+      - full
+    environment:
+      <<: *common-env
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-me-grafana-password}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - honeyaegis-internal
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  honeyaegis-internal:
+    driver: bridge
+    name: honeyaegis-internal
+  honeyaegis-honeypot:
+    driver: bridge
+    name: honeyaegis-honeypot
+    internal: false
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+  redis_data:
+  cowrie_logs:
+  cowrie_downloads:
+  ollama_data:
+  traefik_certs:
+  grafana_data:

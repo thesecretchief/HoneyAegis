@@ -1,0 +1,56 @@
+# =============================================================================
+# Vector Log Shipper Configuration for HoneyAegis
+# Ships Cowrie JSON logs to the FastAPI backend for ingestion
+# =============================================================================
+
+sources:
+  cowrie_json:
+    type: file
+    include:
+      - /var/log/cowrie/cowrie.json
+    read_from: beginning
+    fingerprint:
+      strategy: device_and_inode
+
+transforms:
+  parse_cowrie:
+    type: remap
+    inputs:
+      - cowrie_json
+    source: |
+      . = parse_json!(.message)
+      .source = "cowrie"
+      .ingested_at = now()
+
+  filter_noise:
+    type: filter
+    inputs:
+      - parse_cowrie
+    condition:
+      type: vrl
+      source: |
+        !includes(["cowrie.direct-tcpip.data", "cowrie.log.closed"], .eventid)
+
+sinks:
+  honeyaegis_api:
+    type: http
+    inputs:
+      - filter_noise
+    uri: http://backend:8000/api/v1/events/ingest
+    encoding:
+      codec: json
+    batch:
+      max_events: 50
+      timeout_secs: 5
+    request:
+      concurrency: 2
+      rate_limit_num: 100
+      rate_limit_duration_secs: 1
+
+  console_debug:
+    type: console
+    inputs:
+      - filter_noise
+    encoding:
+      codec: json
+    target: stdout
