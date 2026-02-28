@@ -186,7 +186,41 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 3** — MSP: multi-tenant, client portals, PDF/JSON reports, auto-update
 - [x] **Iteration 4** — Advanced: Kubernetes/Helm, honey tokens, webhooks, plugins, RPi blueprints
 - [x] **Iteration 5** — Production: Prometheus/Grafana, security scanning, SIEM export, rate limiting, audit logging
-- [ ] **Iteration 6+** — SaaS relay, marketplace, advanced threat intelligence
+- [x] **Iteration 6** — v1.0.0: Release workflow, RPi one-click setup, console API, community governance, plugin template
+
+## Features (Iteration 6 — v1.0.0 Release)
+
+### GitHub Release Automation
+- **Release workflow** — triggered on `v*` tags, creates GitHub Release with changelog
+- **Multi-arch images** — builds and pushes `linux/amd64` + `linux/arm64` Docker images to GHCR
+- **Semantic tags** — images tagged with `v1.0.0`, `v1.0`, `v1`, and `latest`
+- **Sensor compose artifact** — standalone `docker-compose.sensor.yml` attached to each release
+
+### Raspberry Pi One-Click Setup
+- **`scripts/rpi-setup.sh`** — detects ARM64, installs Docker, generates passwords, deploys HoneyAegis
+- **Architecture check** — refuses to run on non-ARM64 (directs to standard installer)
+- **Memory/storage validation** — warns on <2GB RAM or low disk space
+- **Credential display** — securely generated passwords shown once at install time
+- **RPi optimizations** — swap recommendations, Docker auto-start configuration
+
+### Hosted Console API (Stubs)
+- **Deployment management** — register, list, remove self-hosted deployments
+- **Aggregated statistics** — cross-deployment metrics (sessions, alerts, sensors)
+- **License endpoint** — community tier with unlimited features (extensible for enterprise)
+- **Heartbeat** — deployment health monitoring endpoint
+
+### Community Governance
+- **CODEOWNERS** — automatic review requests for code area owners
+- **Bug report template** — structured GitHub Issues with version, deployment type, architecture
+- **Feature request template** — categorized proposals with priority levels
+- **PR template** — checklist for tests, lint, docs, changelog
+- **Plugin template** — `plugins/template/` with documented boilerplate and README
+
+### v1.0.0 Release
+- All components at v1.0.0 (backend, frontend, Helm chart)
+- 130+ tests passing
+- Full CI pipeline: lint, build, test, security scan, release automation
+- **[CHANGELOG.md](CHANGELOG.md)** — full version history from v0.1.0 to v1.0.0
 
 ## Features (Iteration 5 — Production Hardening & Observability)
 
@@ -222,7 +256,7 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 ### Comprehensive Documentation
 - **[Plugin Development Guide](docs/plugin-dev-guide.md)** — API reference, examples, best practices
 - **[Contributing Guide](docs/CONTRIBUTING.md)** — setup, conventions, deployment matrix
-- **[CHANGELOG.md](CHANGELOG.md)** — full version history from v0.1.0 to v0.6.0
+- **[CHANGELOG.md](CHANGELOG.md)** — full version history from v0.1.0 to v1.0.0
 - **[Security Audit Checklist](SECURITY.md)** — vulnerability reporting, architecture, deployment checklist
 
 ### Plugin Examples

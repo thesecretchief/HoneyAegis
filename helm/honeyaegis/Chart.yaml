@@ -2,8 +2,8 @@ apiVersion: v2
 name: honeyaegis
 description: Professional-grade honeypot platform — Docker-native, self-hosted, MSP-ready
 type: application
-version: 0.5.0
-appVersion: "0.5.0"
+version: 1.0.0
+appVersion: "1.0.0"
 keywords:
   - honeypot
   - security

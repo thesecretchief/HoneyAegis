@@ -1,0 +1,64 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for HoneyAegis
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We love feature ideas! Please describe what you'd like to see in HoneyAegis.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Honeypot (new protocol / emulation)
+        - Dashboard / Frontend
+        - API / Backend
+        - AI / Analysis
+        - Alerting / Webhooks
+        - Deployment / Infrastructure
+        - Plugin System
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this feature solve? Who benefits?
+      placeholder: "As a security analyst, I want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you envision this working?
+      placeholder: Describe your ideal implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other approaches you've thought about.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this to your workflow?
+      options:
+        - Nice to have
+        - Important
+        - Critical / Blocker
+    validations:
+      required: true

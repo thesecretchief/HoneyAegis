@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Application Info
 # ---------------------------------------------------------------------------
 APP_INFO = Info("honeyaegis", "HoneyAegis application info")
-APP_INFO.info({"version": "0.6.0", "service": "honeyaegis-api"})
+APP_INFO.info({"version": "1.0.0", "service": "honeyaegis-api"})
 
 # ---------------------------------------------------------------------------
 # Request Metrics
