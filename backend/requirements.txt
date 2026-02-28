@@ -35,6 +35,9 @@ langchain-ollama>=0.2.3
 # PDF Reports
 weasyprint==62.3
 
+# Monitoring
+prometheus-client==0.21.1
+
 # Utilities
 python-dotenv==1.0.1
 orjson==3.10.13

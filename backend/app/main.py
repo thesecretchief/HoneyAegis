@@ -7,9 +7,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export
 from app.core.config import settings
 from app.core.database import engine, Base
+from app.services.rate_limiter import RateLimitMiddleware
 
 logging.basicConfig(
     level=logging.DEBUG if settings.honeyaegis_debug else logging.INFO,
@@ -97,9 +98,12 @@ async def _start_log_watcher():
 app = FastAPI(
     title="HoneyAegis API",
     description="Professional-grade honeypot platform API",
-    version="0.5.0",
+    version="0.6.0",
     lifespan=lifespan,
 )
+
+# Rate limiting
+app.add_middleware(RateLimitMiddleware)
 
 # CORS
 app.add_middleware(
@@ -128,3 +132,5 @@ app.include_router(client_portal.router, prefix="/api/v1/client", tags=["client-
 app.include_router(honey_tokens.router, prefix="/api/v1/honey-tokens", tags=["honey-tokens"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["webhooks"])
 app.include_router(plugins.router, prefix="/api/v1/plugins", tags=["plugins"])
+app.include_router(metrics.router, tags=["metrics"])
+app.include_router(export.router, prefix="/api/v1/export", tags=["export"])

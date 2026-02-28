@@ -23,7 +23,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-gray-950 text-gray-100">
         <div className="flex min-h-screen">
-          <nav className="hidden md:flex w-64 bg-gray-900 border-r border-gray-800 p-4 flex-col shrink-0">
+          <nav aria-label="Main navigation" className="hidden md:flex w-64 bg-gray-900 border-r border-gray-800 p-4 flex-col shrink-0">
             <div className="mb-8">
               <h1 className="text-xl font-bold text-honeyaegis-400">
                 HoneyAegis
@@ -40,11 +40,11 @@ export default function RootLayout({
               <NavItem href="/config" label="Config" />
             </ul>
             <div className="mt-auto pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-600">HoneyAegis v0.5.0</p>
+              <p className="text-xs text-gray-600">HoneyAegis v0.6.0</p>
             </div>
           </nav>
           {/* Mobile nav */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 z-50">
+          <nav aria-label="Mobile navigation" className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 z-50">
             <div className="flex justify-around py-2">
               <MobileNavItem href="/" label="Home" />
               <MobileNavItem href="/sessions" label="Sessions" />
@@ -54,7 +54,7 @@ export default function RootLayout({
               <MobileNavItem href="/config" label="Config" />
             </div>
           </nav>
-          <main className="flex-1 p-4 md:p-8 overflow-auto pb-20 md:pb-8">{children}</main>
+          <main role="main" className="flex-1 p-4 md:p-8 overflow-auto pb-20 md:pb-8">{children}</main>
         </div>
       </body>
     </html>

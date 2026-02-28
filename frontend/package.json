@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "lint": "eslint . --max-warnings=0",
     "test": "echo \"Tests will be added in Iteration 1\" && exit 0"
   },
   "dependencies": {
