@@ -38,6 +38,12 @@ jobs:
           python -m py_compile app/api/billing.py
           python -m py_compile app/api/marketplace.py
           python -m py_compile app/services/analytics_service.py
+          python -m py_compile app/workers/sensor_relay.py
+          python -m py_compile app/api/threat_intel.py
+          python -m py_compile app/api/sandbox.py
+          python -m py_compile app/services/threat_intel_service.py
+          python -m py_compile app/services/sandbox_service.py
+          python -m py_compile app/services/advanced_ai_service.py
 
       - name: Run tests
         run: pytest --tb=short -q

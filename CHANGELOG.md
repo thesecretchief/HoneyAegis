@@ -5,6 +5,29 @@ All notable changes to HoneyAegis are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-28
+
+### Added (Iteration 9 — Threat Intelligence, Malware Sandbox & Internationalization)
+- **Threat intel service** — aggregated lookups across MISP, AlienVault OTX, AbuseIPDB, and VirusTotal with in-memory TTL cache
+- **Threat intel API** — `/api/v1/threat-intel/lookup` for indicator enrichment, `/api/v1/threat-intel/feeds` for feed status
+- **Malware sandbox** — static analysis with hash computation, entropy calculation, file type detection, pattern matching, IOC extraction
+- **Sandbox API** — `/api/v1/sandbox/analyze` for file uploads, `/api/v1/sandbox/status` for capability checks
+- **Optional Cuckoo/CAPE integration** — dynamic analysis submission and result polling via sandbox API
+- **Advanced AI service** — RAG over captured sessions for enriched threat analysis, multi-LLM routing (phi3/llama3.2/mistral)
+- **Enhanced SIEM exports** — Elasticsearch bulk format (`/api/v1/export/elk`), Splunk HEC (`/api/v1/export/splunk`), TheHive alerts (`/api/v1/export/thehive`)
+- **Full i18n** — dashboard internationalization with 5 languages: English, Spanish, German, French, Greek
+- **Language switcher** — persistent locale selection with browser language auto-detection
+- **Sensor relay worker** — `app.workers.sensor_relay` for sensor-only deployments (log tailing + event batching)
+- **51 new tests** — threat intel (10), sandbox (17), advanced AI (20), plus 4 existing — 240 total passing
+
+### Changed
+- Navigation updated with v1.1.0 → v1.2.0 version bump
+- Config extended with OTX, MISP, VirusTotal, Cuckoo API settings
+- Main app registers threat-intel and sandbox routers
+- .env.example updated with threat intel and sandbox configuration
+- CI py_compile checks for all new modules
+- All 11 README GIF placeholders replaced with ASCII terminal screenshots
+
 ## [1.1.0] - 2026-02-28
 
 ### Added (Iteration 8 — SaaS Relay, Hardware Kits & Public Launch)

@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     # Analytics (opt-in)
     analytics_enabled: bool = False
 
+    # Threat Intel Feeds
+    otx_api_key: str = ""
+    misp_url: str = ""
+    misp_api_key: str = ""
+    misp_verify_ssl: bool = True
+    virustotal_api_key: str = ""
+
+    # Malware Sandbox (Cuckoo/CAPE)
+    cuckoo_api_url: str = ""
+
     # Rate Limiting
     rate_limit_global_capacity: int = 100
     rate_limit_global_refill: int = 10
