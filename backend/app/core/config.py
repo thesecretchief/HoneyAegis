@@ -51,6 +51,16 @@ class Settings(BaseSettings):
     alert_on_malware_capture: bool = True
     alert_cooldown_minutes: int = 5
 
+    # SaaS Relay
+    relay_enabled: bool = False
+
+    # Stripe Billing
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+
+    # Analytics (opt-in)
+    analytics_enabled: bool = False
+
     # Rate Limiting
     rate_limit_global_capacity: int = 100
     rate_limit_global_refill: int = 10

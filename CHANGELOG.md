@@ -5,6 +5,23 @@ All notable changes to HoneyAegis are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-28
+
+### Added (Iteration 8 — SaaS Relay, Hardware Kits & Public Launch)
+- **SaaS relay backend** — NAT-traversed sensor connections with heartbeat, event batching, and connected sensor listing (`/api/v1/relay/`)
+- **Stripe billing stubs** — subscription plans (Community/Pro/Enterprise), checkout sessions, webhooks, and customer portal (`/api/v1/billing/`)
+- **Plugin marketplace** — community plugin registry with browse, search, install, and submit endpoints (`/api/v1/marketplace/`)
+- **Usage analytics** — privacy-first opt-in telemetry with anonymous instance IDs and deployment metadata
+- **Hardware kit guide** — RPi sensor assembly ($89/$119 BOM), enterprise appliance ($249), MSP white-label packaging
+- **Launch assets** — Twitter/X thread, Reddit/HN post templates, YouTube demo script, press kit
+- **Frontend marketplace page** — browse/search/install plugins with category filters and install tracking
+- **43 new tests** — relay (11), billing (11), marketplace (11), analytics (10) — 189 total passing
+
+### Changed
+- Navigation updated with Marketplace link
+- Config extended with `relay_enabled`, `stripe_secret_key`, `stripe_webhook_secret`, `analytics_enabled`
+- Main app registers relay, billing, marketplace routers
+
 ## [1.0.0] - 2026-02-28
 
 ### Added (Iteration 7 — E2E Testing, Performance & Final Release)

@@ -34,6 +34,10 @@ jobs:
           python -m py_compile app/main.py
           python -m py_compile app/api/console.py
           python -m py_compile app/api/export.py
+          python -m py_compile app/api/relay.py
+          python -m py_compile app/api/billing.py
+          python -m py_compile app/api/marketplace.py
+          python -m py_compile app/services/analytics_service.py
 
       - name: Run tests
         run: pytest --tb=short -q
