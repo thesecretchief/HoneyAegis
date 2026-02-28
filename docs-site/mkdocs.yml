@@ -52,8 +52,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - minify:
-      minify_html: true
 
 nav:
   - Home: index.md

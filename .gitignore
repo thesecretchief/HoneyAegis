@@ -35,6 +35,9 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 
+# MkDocs build output
+docs-site/site/
+
 # Logs
 *.log
 
