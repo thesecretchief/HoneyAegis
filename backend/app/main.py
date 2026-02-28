@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console, relay, billing, marketplace, threat_intel, sandbox
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console, relay, billing, marketplace, threat_intel, sandbox, rbac, sso, reporting, benchmark
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.services.rate_limiter import RateLimitMiddleware
@@ -98,7 +98,7 @@ async def _start_log_watcher():
 app = FastAPI(
     title="HoneyAegis API",
     description="Professional-grade honeypot platform API",
-    version="1.0.0",
+    version="1.3.0",
     lifespan=lifespan,
 )
 
@@ -140,3 +140,7 @@ app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
 app.include_router(marketplace.router, prefix="/api/v1/marketplace", tags=["marketplace"])
 app.include_router(threat_intel.router, prefix="/api/v1/threat-intel", tags=["threat-intel"])
 app.include_router(sandbox.router, prefix="/api/v1/sandbox", tags=["sandbox"])
+app.include_router(rbac.router, prefix="/api/v1/rbac", tags=["rbac"])
+app.include_router(sso.router, prefix="/api/v1/sso", tags=["sso"])
+app.include_router(reporting.router, prefix="/api/v1/reporting", tags=["reporting"])
+app.include_router(benchmark.router, prefix="/api/v1/benchmark", tags=["benchmark"])

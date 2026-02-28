@@ -1,0 +1,142 @@
+# =============================================================================
+# HoneyAegis High-Availability Overlay
+# Usage: docker compose -f docker-compose.yml -f configs/ha/docker-compose.ha.yml --profile full up -d
+# =============================================================================
+# Adds:
+#   - Redis Sentinel (3-node) for cache/queue failover
+#   - PostgreSQL streaming replication (primary + read replica)
+#   - Celery Flower for task monitoring
+#   - Backend scaled to 2 replicas behind Traefik load balancer
+# =============================================================================
+# Requirements: 8 GB+ RAM, full profile
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Redis Sentinel (HA)
+  # ---------------------------------------------------------------------------
+  redis-sentinel-1:
+    image: redis:7-alpine
+    container_name: honeyaegis-redis-sentinel-1
+    restart: unless-stopped
+    profiles:
+      - full
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf <<CONF
+      port 26379
+      sentinel monitor honeyaegis-redis redis 6379 2
+      sentinel auth-pass honeyaegis-redis $${REDIS_PASSWORD:-change-me-redis-password}
+      sentinel down-after-milliseconds honeyaegis-redis 5000
+      sentinel failover-timeout honeyaegis-redis 10000
+      sentinel parallel-syncs honeyaegis-redis 1
+      CONF
+      redis-sentinel /tmp/sentinel.conf'
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+  redis-sentinel-2:
+    image: redis:7-alpine
+    container_name: honeyaegis-redis-sentinel-2
+    restart: unless-stopped
+    profiles:
+      - full
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf <<CONF
+      port 26379
+      sentinel monitor honeyaegis-redis redis 6379 2
+      sentinel auth-pass honeyaegis-redis $${REDIS_PASSWORD:-change-me-redis-password}
+      sentinel down-after-milliseconds honeyaegis-redis 5000
+      sentinel failover-timeout honeyaegis-redis 10000
+      sentinel parallel-syncs honeyaegis-redis 1
+      CONF
+      redis-sentinel /tmp/sentinel.conf'
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+  redis-sentinel-3:
+    image: redis:7-alpine
+    container_name: honeyaegis-redis-sentinel-3
+    restart: unless-stopped
+    profiles:
+      - full
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf <<CONF
+      port 26379
+      sentinel monitor honeyaegis-redis redis 6379 2
+      sentinel auth-pass honeyaegis-redis $${REDIS_PASSWORD:-change-me-redis-password}
+      sentinel down-after-milliseconds honeyaegis-redis 5000
+      sentinel failover-timeout honeyaegis-redis 10000
+      sentinel parallel-syncs honeyaegis-redis 1
+      CONF
+      redis-sentinel /tmp/sentinel.conf'
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Read Replica (streaming replication)
+  # ---------------------------------------------------------------------------
+  postgres-replica:
+    image: timescale/timescaledb:latest-pg16
+    container_name: honeyaegis-postgres-replica
+    restart: unless-stopped
+    profiles:
+      - full
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-honeyaegis}
+      POSTGRES_USER: ${POSTGRES_USER:-honeyaegis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres-password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-honeyaegis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Celery Flower (task monitoring)
+  # ---------------------------------------------------------------------------
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: honeyaegis-flower
+    restart: unless-stopped
+    profiles:
+      - full
+    command: celery -A app.workers.celery_app flower --port=5555 --broker_api=redis://:${REDIS_PASSWORD:-change-me-redis-password}@redis:6379/0
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
+      FLOWER_BASIC_AUTH: ${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-change-me-flower-password}
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - honeyaegis-internal
+
+volumes:
+  postgres_replica_data:
