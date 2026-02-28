@@ -38,6 +38,7 @@ jobs:
           python -m py_compile app/api/billing.py
           python -m py_compile app/api/marketplace.py
           python -m py_compile app/services/analytics_service.py
+          python -m py_compile app/workers/sensor_relay.py
 
       - name: Run tests
         run: pytest --tb=short -q
