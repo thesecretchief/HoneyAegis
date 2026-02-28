@@ -185,6 +185,8 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 
 ## Features (Iteration 3 — MSP Ready)
 
+> **Screenshots:** See the GIFs below for client portal, PDF reports, and tenant branding in action.
+
 ### Multi-Tenant Isolation
 - **Tenant-scoped data** — every table has `tenant_id`, enforced at the query level
 - **JWT tenant claims** — tenant context propagated through authentication
@@ -196,6 +198,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Client portal theming** — branding applied to view-only portals
 - **Report branding** — PDF reports include tenant logo and colors
 
+<!-- TODO: Add GIF: tenant branding config UI -->
+<!-- ![Tenant Branding](docs/assets/tenant-branding.gif) -->
+
 ### Client Portals
 - **View-only access** — clients see their incidents without configuration access
 - **No auth required** — portals identified by tenant slug (`/client/acme-corp`)
@@ -203,12 +208,18 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Session table** — browseable attack sessions with filtering
 - **Auto-refresh** — portals update every 30 seconds
 
+<!-- TODO: Add GIF: client portal with custom branding -->
+<!-- ![Client Portal](docs/assets/client-portal.gif) -->
+
 ### PDF/JSON Forensic Reports
 - **WeasyPrint PDF** — polished, styled reports with session data + AI summaries
 - **Single session** — detailed report for one specific attack session
 - **Aggregate** — summary report across all sessions for a tenant
 - **MITRE ATT&CK** — TTP mapping included in reports
 - **One-click export** — download buttons on session detail page
+
+<!-- TODO: Add GIF: PDF report download -->
+<!-- ![PDF Report](docs/assets/pdf-report.gif) -->
 
 ### Auto-Update System
 - **Update script** — `./scripts/update.sh` pulls code + images and recreates containers

@@ -136,18 +136,26 @@ async def get_my_branding(
 ):
     """Get branding for the current user's tenant."""
     if not current_user.tenant_id:
-        return {"name": "HoneyAegis", "primary_color": "#f59e0b", "logo_url": None}
+        return {
+            "id": None, "slug": "default", "name": "HoneyAegis",
+            "display_name": "HoneyAegis", "primary_color": "#f59e0b", "logo_url": None,
+        }
 
     result = await db.execute(
         select(Tenant).where(Tenant.id == current_user.tenant_id)
     )
     tenant = result.scalar_one_or_none()
     if not tenant:
-        return {"name": "HoneyAegis", "primary_color": "#f59e0b", "logo_url": None}
+        return {
+            "id": None, "slug": "default", "name": "HoneyAegis",
+            "display_name": "HoneyAegis", "primary_color": "#f59e0b", "logo_url": None,
+        }
 
     return {
-        "name": tenant.display_name or tenant.name,
+        "id": str(tenant.id),
+        "slug": tenant.slug,
+        "name": tenant.name,
+        "display_name": tenant.display_name or tenant.name,
         "primary_color": tenant.primary_color,
         "logo_url": tenant.logo_url,
-        "slug": tenant.slug,
     }

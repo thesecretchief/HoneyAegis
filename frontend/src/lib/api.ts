@@ -334,14 +334,38 @@ export async function updateAlertRules(data: {
 
 // -- Reports API ------------------------------------------------------------
 
-export function getReportJsonUrl(sessionId?: string): string {
+export async function downloadReport(
+  format: "json" | "pdf",
+  sessionId?: string,
+): Promise<void> {
   const qs = sessionId ? `?session_id=${sessionId}` : "";
-  return `${API_BASE}/api/v1/reports/json${qs}`;
-}
+  const path = `/api/v1/reports/${format}${qs}`;
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-export function getReportPdfUrl(sessionId?: string): string {
-  const qs = sessionId ? `?session_id=${sessionId}` : "";
-  return `${API_BASE}/api/v1/reports/pdf${qs}`;
+  const res = await fetch(`${API_BASE}${path}`, { headers });
+  if (res.status === 401) {
+    clearToken();
+    if (typeof window !== "undefined") window.location.href = "/login";
+    return;
+  }
+  if (!res.ok) throw new Error(`Report download failed: ${res.status}`);
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const ext = format === "pdf" ? "pdf" : "json";
+  a.download = sessionId
+    ? `honeyaegis-report-${sessionId.slice(0, 8)}.${ext}`
+    : `honeyaegis-report.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // -- Tenants API ------------------------------------------------------------
