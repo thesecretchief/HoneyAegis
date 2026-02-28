@@ -1,0 +1,16 @@
+.git
+.github
+.gitignore
+.env
+.env.*
+*.md
+LICENSE
+docs/
+node_modules/
+.next/
+__pycache__/
+.venv/
+venv/
+*.pyc
+.pytest_cache/
+.mypy_cache/
