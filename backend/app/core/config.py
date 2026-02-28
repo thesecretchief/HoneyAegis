@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     alert_on_malware_capture: bool = True
     alert_cooldown_minutes: int = 5
 
+    # Rate Limiting
+    rate_limit_global_capacity: int = 100
+    rate_limit_global_refill: int = 10
+    rate_limit_auth_capacity: int = 10
+    rate_limit_auth_refill: int = 1
+
     @property
     def database_url(self) -> str:
         return (

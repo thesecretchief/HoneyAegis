@@ -1,7 +1,11 @@
 """Rate limiting middleware for HoneyAegis API.
 
 Token-bucket rate limiter backed by in-memory storage.
-Configurable per-endpoint and global limits.
+Configurable per-endpoint and global limits via env vars:
+  RATE_LIMIT_GLOBAL_CAPACITY (default: 100)
+  RATE_LIMIT_GLOBAL_REFILL (default: 10 tokens/sec)
+  RATE_LIMIT_AUTH_CAPACITY (default: 10)
+  RATE_LIMIT_AUTH_REFILL (default: 1 token/sec)
 """
 
 import time
@@ -12,6 +16,8 @@ from dataclasses import dataclass, field
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +48,20 @@ class TokenBucket:
         return False
 
 
-# Global rate limit store (per IP)
+# Global rate limit store (per IP) — configurable via RATE_LIMIT_GLOBAL_*
 _buckets: dict[str, TokenBucket] = defaultdict(
-    lambda: TokenBucket(capacity=100, refill_rate=10)  # 100 burst, 10/s sustained
+    lambda: TokenBucket(
+        capacity=settings.rate_limit_global_capacity,
+        refill_rate=settings.rate_limit_global_refill,
+    )
 )
 
-# Auth endpoint rate limit (stricter)
+# Auth endpoint rate limit (stricter) — configurable via RATE_LIMIT_AUTH_*
 _auth_buckets: dict[str, TokenBucket] = defaultdict(
-    lambda: TokenBucket(capacity=10, refill_rate=1)  # 10 burst, 1/s sustained
+    lambda: TokenBucket(
+        capacity=settings.rate_limit_auth_capacity,
+        refill_rate=settings.rate_limit_auth_refill,
+    )
 )
 
 

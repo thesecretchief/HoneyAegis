@@ -2,15 +2,15 @@
 
 import logging
 from datetime import datetime, timezone
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.auth import get_tenant_id
 from app.models.session import Session
-from app.models.alert import Alert
 from app.services.audit_service import format_cef, format_syslog
 
 logger = logging.getLogger(__name__)
@@ -18,29 +18,36 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/json")
-async def export_events_json(
-    limit: int = Query(default=100, le=1000),
-    since: str | None = Query(default=None, description="ISO timestamp to filter from"),
-    db: AsyncSession = Depends(get_db),
-    tenant_id=Depends(get_tenant_id),
+def _build_session_query(
+    tenant_id: UUID,
+    limit: int,
+    since: str | None = None,
 ):
-    """Export events as structured JSON for SIEM ingestion."""
+    """Build a tenant-scoped session query with optional time filter."""
     query = (
         select(Session)
         .where(Session.tenant_id == tenant_id)
         .order_by(Session.start_time.desc())
         .limit(limit)
     )
-
     if since:
         try:
             since_dt = datetime.fromisoformat(since)
             query = query.where(Session.start_time >= since_dt)
         except ValueError:
             pass
+    return query
 
-    result = await db.execute(query)
+
+@router.get("/json")
+async def export_events_json(
+    limit: int = Query(default=100, le=1000),
+    since: str | None = Query(default=None, description="ISO timestamp to filter from"),
+    db: AsyncSession = Depends(get_db),
+    tenant_id: UUID = Depends(get_tenant_id),
+):
+    """Export events as structured JSON for SIEM ingestion."""
+    result = await db.execute(_build_session_query(tenant_id, limit, since))
     sessions = result.scalars().all()
 
     events = []
@@ -75,16 +82,12 @@ async def export_events_json(
 @router.get("/cef")
 async def export_events_cef(
     limit: int = Query(default=100, le=1000),
+    since: str | None = Query(default=None, description="ISO timestamp to filter from"),
     db: AsyncSession = Depends(get_db),
-    tenant_id=Depends(get_tenant_id),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Export events as CEF (Common Event Format) for SIEM integration."""
-    result = await db.execute(
-        select(Session)
-        .where(Session.tenant_id == tenant_id)
-        .order_by(Session.start_time.desc())
-        .limit(limit)
-    )
+    result = await db.execute(_build_session_query(tenant_id, limit, since))
     sessions = result.scalars().all()
 
     lines = []
@@ -117,16 +120,12 @@ async def export_events_cef(
 @router.get("/syslog")
 async def export_events_syslog(
     limit: int = Query(default=100, le=1000),
+    since: str | None = Query(default=None, description="ISO timestamp to filter from"),
     db: AsyncSession = Depends(get_db),
-    tenant_id=Depends(get_tenant_id),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Export events as syslog-formatted messages."""
-    result = await db.execute(
-        select(Session)
-        .where(Session.tenant_id == tenant_id)
-        .order_by(Session.start_time.desc())
-        .limit(limit)
-    )
+    result = await db.execute(_build_session_query(tenant_id, limit, since))
     sessions = result.scalars().all()
 
     lines = []
