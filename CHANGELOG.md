@@ -5,6 +5,32 @@ All notable changes to HoneyAegis are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-28
+
+### Added (Iteration 10 — Scaling, HA, Enterprise MSP, Docs Site & v1.1 Release)
+- **High availability** — Redis Sentinel (3-node quorum), PostgreSQL streaming replication, Celery Flower monitoring
+- **HA compose overlay** — `configs/ha/docker-compose.ha.yml` for production HA deployments
+- **RBAC service** — 4 roles (superadmin/admin/analyst/viewer) with 25+ granular permissions
+- **RBAC API** — `/api/v1/rbac/roles`, `/api/v1/rbac/check`, `/api/v1/rbac/permissions`
+- **SSO/OIDC stub** — provider templates for Keycloak, Okta, Azure AD, Google Workspace
+- **SSO API** — `/api/v1/sso/templates`, `/api/v1/sso/configure`, `/api/v1/sso/callback`, `/api/v1/sso/status`
+- **Advanced reporting** — executive dashboards with risk scoring (0-100), compliance metrics, trend analysis
+- **Reporting API** — `/api/v1/reporting/executive`, `/api/v1/reporting/compliance`, `/api/v1/reporting/risk-score`
+- **Performance benchmarks** — benchmark service with percentile calculation, security audit checklist, Lighthouse targets (98+)
+- **Benchmark API** — `/api/v1/benchmark/health-report`, `/api/v1/benchmark/security-audit`, `/api/v1/benchmark/lighthouse`
+- **Documentation site** — MkDocs Material site in `docs-site/` with GitHub Pages auto-deploy
+- **Docs CI workflow** — `.github/workflows/docs.yml` builds and deploys docs on push to main
+- **Launch blog post** — `docs/launch/blog-post.md` with v1.1 announcement
+- **87 new tests** — RBAC (25), SSO (22), reporting (17), benchmark (23) — 327 total passing
+
+### Changed
+- Backend API version bumped to 1.3.0
+- Frontend version bumped to v1.3.0
+- Config extended with OIDC and HA settings
+- Main app registers rbac, sso, reporting, and benchmark routers
+- .env.example updated with OIDC and Flower settings
+- CI py_compile checks for all new modules
+
 ## [1.2.0] - 2026-02-28
 
 ### Added (Iteration 9 — Threat Intelligence, Malware Sandbox & Internationalization)

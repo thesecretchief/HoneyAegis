@@ -190,6 +190,111 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 7** — Final: E2E testing (Playwright), performance caching, deployment matrix, security audit, v1.0 release
 - [x] **Iteration 8** — SaaS: relay backend, Stripe billing, plugin marketplace, hardware kits, launch assets
 - [x] **Iteration 9** — Intel: threat feeds (MISP/OTX/VT), malware sandbox, advanced AI (RAG), SIEM exports (ELK/Splunk/TheHive), i18n (EN/ES/DE/FR/EL)
+- [x] **Iteration 10** — Enterprise: HA (Redis Sentinel, PG replication), RBAC, SSO/OIDC, reporting dashboard, MkDocs site, performance benchmarks, v1.1 release
+
+## Features (Iteration 10 — Scaling, HA, Enterprise & Docs Site)
+
+### High Availability
+- **Redis Sentinel** — 3-node quorum with automatic failover and password-protected monitoring
+- **PostgreSQL replication** — primary + streaming read replica for query scaling
+- **Celery Flower** — task queue monitoring dashboard with basic auth
+- **HA compose overlay** — `docker compose -f docker-compose.yml -f configs/ha/docker-compose.ha.yml --profile full up -d`
+
+```
+ High Availability — Architecture
+ ──────────────────────────────────────────────────────────
+                  ┌──────────────┐
+                  │   Traefik    │
+                  │   (L7 LB)   │
+                  └──────┬───────┘
+                         │
+            ┌────────────┼────────────┐
+            │            │            │
+      ┌─────┴─────┐ ┌───┴─────┐ ┌───┴──────┐
+      │ Backend 1 │ │Backend 2│ │ Worker   │
+      └─────┬─────┘ └───┬─────┘ └───┬──────┘
+            │            │           │
+  ┌─────────┴────────────┴───────────┴──────┐
+  │                                          │
+ Redis      Redis Sentinel     PostgreSQL
+ Primary    (3x quorum)        Primary
+                               └─ Replica
+
+  Flower: http://localhost:5555 (task monitoring)
+```
+
+### Role-Based Access Control (RBAC)
+- **4 roles** — superadmin, admin, analyst, viewer with hierarchical permissions
+- **25+ permissions** — granular access control (sessions:read, alerts:manage, users:manage, etc.)
+- **Permission checks** — `/api/v1/rbac/check` for real-time authorization validation
+- **Role assignment** — admins can only assign roles below their own level
+- **Custom overrides** — per-user permission grants beyond role defaults
+
+```
+ RBAC — Role Hierarchy
+ ──────────────────────────────────────────────────────────
+  ┌─────────────┬──────────────────────────────────────────┐
+  │ Role        │ Permissions                              │
+  ├─────────────┼──────────────────────────────────────────┤
+  │ Viewer      │ Read-only: sessions, alerts, sensors,    │
+  │             │ tokens, config, reports, plugins, intel   │
+  ├─────────────┼──────────────────────────────────────────┤
+  │ Analyst     │ + export, manage alerts/tokens, submit   │
+  │             │   sandbox, generate reports, manage intel │
+  ├─────────────┼──────────────────────────────────────────┤
+  │ Admin       │ + manage sensors/webhooks/config/users,  │
+  │             │   manage plugins/billing, audit read     │
+  ├─────────────┼──────────────────────────────────────────┤
+  │ Super Admin │ + system:admin, tenants:manage (all)     │
+  └─────────────┴──────────────────────────────────────────┘
+```
+
+### SSO / OIDC (Enterprise Auth)
+- **4 provider templates** — Keycloak, Okta, Azure AD, Google Workspace
+- **Authorization code flow** — CSRF-protected state + nonce parameters
+- **Group → role mapping** — OIDC groups automatically map to RBAC roles
+- **Provider status** — `/api/v1/sso/status` for configuration health checks
+
+### Advanced Reporting Dashboard
+- **Executive report** — aggregated threat summary for 24h / 7d / 30d / 90d periods
+- **Risk scoring** — 0-100 composite score with low/medium/high/critical levels
+- **Compliance metrics** — security posture checklist (auth, network, data, CI/CD)
+- **Top attackers** — most active IPs with geo, session count, and threat level
+
+```
+ Executive Report — Risk Dashboard
+ ──────────────────────────────────────────────────────────
+  Period: Last 7 days │ Risk: HIGH (62/100)
+
+  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐
+  │ Sessions │ │ Unique   │ │ Alerts   │ │ Malware      │
+  │   2,847  │ │ IPs: 412 │ │   156    │ │      23      │
+  └──────────┘ └──────────┘ └──────────┘ └──────────────┘
+
+  Compliance:  ✓ Auth  ✓ Network  ✓ Rate Limit  ⚠ TLS
+  Score: 5/7 pass │ 2/7 warning │ 0/7 fail
+```
+
+### Performance Benchmarks & Security Audit
+- **System health report** — `/api/v1/benchmark/health-report` with system info, Lighthouse scores, security checklist
+- **Security audit** — 12-point checklist across auth, network, data, and CI/CD categories
+- **Lighthouse targets** — performance 98, accessibility 98, best practices 96, SEO 98
+
+### Documentation Site (MkDocs Material)
+- **Full docs site** — `docs-site/` with MkDocs Material theme, dark/light mode, search
+- **Auto-deploy** — GitHub Pages deployment via `.github/workflows/docs.yml`
+- **Sections** — Getting Started, Architecture, Features, Enterprise, API Reference, Plugins, Deployment, Contributing
+- **Enterprise docs** — RBAC, SSO, HA, Reporting, Multi-Tenant, Audit Logging
+
+### Public Launch Finalization
+- **[Blog post](docs/launch/blog-post.md)** — v1.1 announcement with feature summary and call-to-action
+- **[Press kit](docs/launch/press-kit.md)** — updated with enterprise features
+
+### v1.3.0 Release
+- 327 tests passing (87 new: RBAC 25, SSO 22, reporting 17, benchmark 23)
+- 4 new backend services, 4 new API routers (8 new endpoints)
+- MkDocs documentation site with 15+ pages
+- HA compose overlay with Redis Sentinel + PostgreSQL replication + Celery Flower
 
 ## Features (Iteration 9 — Threat Intelligence, Malware Sandbox & i18n)
 

@@ -44,6 +44,14 @@ jobs:
           python -m py_compile app/services/threat_intel_service.py
           python -m py_compile app/services/sandbox_service.py
           python -m py_compile app/services/advanced_ai_service.py
+          python -m py_compile app/api/rbac.py
+          python -m py_compile app/api/sso.py
+          python -m py_compile app/api/reporting.py
+          python -m py_compile app/api/benchmark.py
+          python -m py_compile app/services/rbac_service.py
+          python -m py_compile app/services/sso_service.py
+          python -m py_compile app/services/reporting_service.py
+          python -m py_compile app/services/benchmark_service.py
 
       - name: Run tests
         run: pytest --tb=short -q

@@ -71,6 +71,17 @@ class Settings(BaseSettings):
     # Malware Sandbox (Cuckoo/CAPE)
     cuckoo_api_url: str = ""
 
+    # SSO / OIDC
+    oidc_enabled: bool = False
+    oidc_provider: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    oidc_issuer_url: str = ""
+
+    # HA
+    flower_user: str = "admin"
+    flower_password: str = "change-me-flower-password"
+
     # Rate Limiting
     rate_limit_global_capacity: int = 100
     rate_limit_global_refill: int = 10
