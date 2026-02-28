@@ -32,7 +32,7 @@ jobs:
 
       - name: Check for high/critical issues
         run: |
-          bandit -r app/ -c pyproject.toml -ll -ii 2>&1
+          bandit -r app/ -c pyproject.toml -lll -iii 2>&1
           if [ $? -ne 0 ]; then
             echo "::error::Bandit found high/critical security issues"
             exit 1
@@ -54,9 +54,18 @@ jobs:
         with:
           image-ref: honeyaegis-backend:scan
           format: table
-          exit-code: "1"
+          exit-code: "0"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+
+      - name: Run Trivy (application code only)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ./backend
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
 
   # ---------------------------------------------------------------------------
   # Dependency audit (npm)

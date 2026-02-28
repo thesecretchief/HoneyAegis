@@ -30,7 +30,7 @@ VIDEO_CACHE_DIR.mkdir(exist_ok=True)
 @router.get("/{session_id}/video")
 async def export_session_video(
     session_id: UUID,
-    format: str = Query("mp4", regex="^(mp4|gif)$"),
+    format: str = Query("mp4", pattern="^(mp4|gif)$"),
     db: AsyncSession = Depends(get_db),
     tenant_id: UUID = Depends(get_tenant_id),
 ):

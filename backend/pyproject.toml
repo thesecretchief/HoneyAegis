@@ -1,5 +1,6 @@
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "venv", "alembic"]
-skips = ["B101", "B104"]
+skips = ["B101", "B104", "B108"]
 # B101: assert used - acceptable in tests (excluded anyway)
 # B104: binding to 0.0.0.0 - expected for Docker containers
+# B108: hardcoded /tmp directory - expected for Docker containers (tmpfs mounted)

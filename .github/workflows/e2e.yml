@@ -1,0 +1,72 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "e2e/**"
+      - "docker-compose.yml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Start HoneyAegis stack
+        run: |
+          cp .env.example .env 2>/dev/null || true
+          docker compose up -d --build --wait
+        timeout-minutes: 5
+
+      - name: Wait for services to be healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is healthy"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run E2E API tests
+        working-directory: e2e
+        run: npx playwright test api.spec.ts --reporter=github
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:8000
+
+      - name: Run E2E Dashboard tests
+        working-directory: e2e
+        run: npx playwright test dashboard.spec.ts --reporter=github
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:8000
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: e2e/test-results/
+          retention-days: 7
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
