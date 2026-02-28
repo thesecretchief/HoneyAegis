@@ -159,6 +159,12 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
             session.password = password
             session.auth_success = success
 
+        # Check for honey token match
+        try:
+            await _check_honey_token(db, username, password, src_ip, session_key, ts)
+        except Exception as e:
+            logger.debug("Honey token check skipped: %s", e)
+
         broadcast_data = {
             "type": "login.attempt",
             "session_id": session_key,
@@ -276,6 +282,88 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
     db.add(event)
 
     return broadcast_data
+
+
+async def _check_honey_token(
+    db: AsyncSession,
+    username: str,
+    password: str,
+    src_ip: str,
+    session_key: str,
+    timestamp,
+) -> None:
+    """Check if login credentials match any active honey token."""
+    from app.models.honey_token import HoneyToken
+    from app.models.alert import Alert
+
+    if not username:
+        return
+
+    # Look for matching credential tokens
+    result = await db.execute(
+        select(HoneyToken).where(
+            HoneyToken.token_type == "credential",
+            HoneyToken.is_active.is_(True),
+            HoneyToken.username == username,
+        )
+    )
+    tokens = result.scalars().all()
+
+    for token in tokens:
+        # Match on username alone or username+password
+        if token.password and token.password != password:
+            continue
+
+        logger.warning(
+            "HONEY TOKEN TRIGGERED: '%s' used by %s (session %s)",
+            token.name, src_ip, session_key,
+        )
+
+        # Update token state
+        token.trigger_count = (token.trigger_count or 0) + 1
+        token.last_triggered_at = timestamp
+
+        # Find the session to get tenant_id
+        session_result = await db.execute(
+            select(Session).where(Session.session_id == session_key)
+        )
+        session = session_result.scalar_one_or_none()
+
+        # Create a critical alert
+        alert = Alert(
+            id=uuid4(),
+            tenant_id=token.tenant_id,
+            session_id=session.id if session else None,
+            alert_type="honey_token",
+            severity=token.alert_severity or "critical",
+            title=f"Honey Token Triggered: {token.name}",
+            description=(
+                f"Decoy credential '{token.username}' was used by {src_ip}. "
+                f"Session: {session_key}. This indicates targeted access to canary credentials."
+            ),
+        )
+        db.add(alert)
+
+        # Fire webhooks if configured
+        try:
+            from app.services.webhook_service import fire_webhooks
+
+            payload = {
+                "event": "honey_token.triggered",
+                "token_name": token.name,
+                "token_type": token.token_type,
+                "username": username,
+                "src_ip": src_ip,
+                "session_id": session_key,
+                "severity": token.alert_severity,
+                "timestamp": timestamp.isoformat() if hasattr(timestamp, "isoformat") else str(timestamp),
+            }
+            await fire_webhooks(
+                db, token.tenant_id, "honey_token",
+                token.alert_severity, payload,
+            )
+        except Exception as e:
+            logger.debug("Webhook fire skipped: %s", e)
 
 
 async def _auto_summarize_session(session: Session, db: AsyncSession) -> None:

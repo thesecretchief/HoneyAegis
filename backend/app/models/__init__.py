@@ -8,8 +8,11 @@ from app.models.download import Download
 from app.models.geoip import GeoIPCache
 from app.models.alert import Alert
 from app.models.ai_summary import AISummary
+from app.models.honey_token import HoneyToken
+from app.models.webhook import Webhook
 
 __all__ = [
     "Tenant", "User", "Session", "Event", "Sensor",
     "Command", "Download", "GeoIPCache", "Alert", "AISummary",
+    "HoneyToken", "Webhook",
 ]

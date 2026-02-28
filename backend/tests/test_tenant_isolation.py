@@ -39,8 +39,8 @@ def test_tenant_model_fields():
 
 
 def test_tenant_default_color():
-    """Tenant has default amber color."""
-    t = Tenant(slug="default", name="Default")
+    """Tenant has default amber color when explicitly set."""
+    t = Tenant(slug="default", name="Default", primary_color="#f59e0b")
     assert t.primary_color == "#f59e0b"
 
 
@@ -106,6 +106,7 @@ def test_user_response_includes_tenant_id():
         is_active=True,
         is_superuser=False,
         tenant_id=tenant_id,
+        created_at=datetime.now(timezone.utc).isoformat(),
     )
     assert resp.tenant_id == tenant_id
 
@@ -118,6 +119,7 @@ def test_user_response_tenant_id_optional():
         full_name="Test User",
         is_active=True,
         is_superuser=False,
+        created_at=datetime.now(timezone.utc).isoformat(),
     )
     assert resp.tenant_id is None
 

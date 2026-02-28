@@ -1,0 +1,109 @@
+# HoneyAegis Helm Chart Values
+# Override these values in your own values.yaml file
+
+# -- Global settings --
+replicaCount: 1
+namespace: honeyaegis
+
+# -- Backend (FastAPI) --
+backend:
+  image:
+    repository: ghcr.io/thesecretchief/honeyaegis-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 8000
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+# -- Frontend (Next.js) --
+frontend:
+  image:
+    repository: ghcr.io/thesecretchief/honeyaegis-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 3000
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# -- Cowrie Honeypot --
+cowrie:
+  enabled: true
+  image:
+    repository: ghcr.io/thesecretchief/honeyaegis-cowrie
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  sshPort: 2222
+  telnetPort: 2223
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# -- PostgreSQL --
+postgresql:
+  enabled: true
+  image:
+    repository: timescale/timescaledb
+    tag: "latest-pg16"
+  auth:
+    database: honeyaegis
+    username: honeyaegis
+    password: "changeme"
+  storage:
+    size: 10Gi
+
+# -- Redis --
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+  resources:
+    limits:
+      memory: "256Mi"
+
+# -- Ollama (AI - full profile only) --
+ollama:
+  enabled: false
+  image:
+    repository: ollama/ollama
+    tag: "latest"
+  model: "phi3:mini"
+  resources:
+    requests:
+      memory: "2Gi"
+    limits:
+      memory: "4Gi"
+
+# -- Ingress --
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: honeyaegis.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# -- Environment --
+env:
+  HONEYAEGIS_SECRET_KEY: "change-me-in-production"
+  JWT_SECRET_KEY: "change-me-in-production"
+  ADMIN_EMAIL: "admin@honeyaegis.local"
+  ADMIN_PASSWORD: "changeme"
+  OLLAMA_ENABLED: "false"

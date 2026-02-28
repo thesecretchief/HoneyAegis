@@ -396,6 +396,102 @@ export async function updateTenantBranding(data: {
   });
 }
 
+// -- Honey Tokens API -------------------------------------------------------
+
+export interface HoneyTokenData {
+  id: string;
+  token_type: string;
+  name: string;
+  description: string | null;
+  username: string | null;
+  password: string | null;
+  filename: string | null;
+  is_active: boolean;
+  trigger_count: number;
+  last_triggered_at: string | null;
+  alert_severity: string;
+  webhook_url: string | null;
+  created_at: string;
+}
+
+export async function getHoneyTokens(): Promise<{ tokens: HoneyTokenData[]; total: number }> {
+  return apiFetch("/api/v1/honey-tokens/");
+}
+
+export async function createHoneyToken(data: {
+  name: string;
+  token_type?: string;
+  username?: string;
+  password?: string;
+  filename?: string;
+  alert_severity?: string;
+}): Promise<{ id: string }> {
+  return apiFetch("/api/v1/honey-tokens/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteHoneyToken(tokenId: string): Promise<void> {
+  await apiFetch(`/api/v1/honey-tokens/${tokenId}`, { method: "DELETE" });
+}
+
+// -- Webhooks API -----------------------------------------------------------
+
+export interface WebhookData {
+  id: string;
+  name: string;
+  url: string;
+  description: string | null;
+  trigger_on: string;
+  severity_filter: string | null;
+  http_method: string;
+  is_active: boolean;
+  execution_count: number;
+  last_executed_at: string | null;
+  last_status_code: number | null;
+  created_at: string;
+}
+
+export async function getWebhooks(): Promise<{ webhooks: WebhookData[]; total: number }> {
+  return apiFetch("/api/v1/webhooks/");
+}
+
+export async function createWebhook(data: {
+  name: string;
+  url: string;
+  trigger_on?: string;
+  severity_filter?: string;
+}): Promise<{ id: string }> {
+  return apiFetch("/api/v1/webhooks/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteWebhook(webhookId: string): Promise<void> {
+  await apiFetch(`/api/v1/webhooks/${webhookId}`, { method: "DELETE" });
+}
+
+export async function testWebhook(webhookId: string): Promise<{ status: string; response_code: number }> {
+  return apiFetch(`/api/v1/webhooks/${webhookId}/test`, { method: "POST" });
+}
+
+// -- Plugins API ------------------------------------------------------------
+
+export interface PluginData {
+  name: string;
+  version: string;
+  description: string;
+  plugin_type: string;
+  author: string;
+  enabled: boolean;
+}
+
+export async function getPlugins(): Promise<{ plugins: PluginData[] }> {
+  return apiFetch("/api/v1/plugins/");
+}
+
 // -- WebSocket --------------------------------------------------------------
 
 export function connectWebSocket(

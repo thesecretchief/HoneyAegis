@@ -184,6 +184,52 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 
 -- ---------------------------------------------------------------------------
+-- Honey Tokens (decoy credentials and files)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS honey_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    token_type VARCHAR(50) NOT NULL DEFAULT 'credential',
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    username VARCHAR(255),
+    password VARCHAR(255),
+    filename VARCHAR(500),
+    file_path VARCHAR(1000),
+    is_active BOOLEAN DEFAULT true,
+    trigger_count INTEGER DEFAULT 0,
+    last_triggered_at TIMESTAMPTZ,
+    alert_severity VARCHAR(20) DEFAULT 'critical',
+    webhook_url VARCHAR(1000),
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ---------------------------------------------------------------------------
+-- Webhooks (auto-response hooks)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS webhooks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    url VARCHAR(1000) NOT NULL,
+    secret VARCHAR(255),
+    trigger_on VARCHAR(50) NOT NULL DEFAULT 'alert',
+    severity_filter VARCHAR(50),
+    http_method VARCHAR(10) DEFAULT 'POST',
+    headers JSONB DEFAULT '{}',
+    payload_template JSONB,
+    is_active BOOLEAN DEFAULT true,
+    execution_count INTEGER DEFAULT 0,
+    last_executed_at TIMESTAMPTZ,
+    last_status_code INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ---------------------------------------------------------------------------
 -- Indexes
 -- ---------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_sessions_src_ip ON sessions (src_ip);
@@ -203,3 +249,7 @@ CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_tenant_id ON sessions (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_sensors_tenant_id ON sensors (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_tenant_id ON alerts (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_honey_tokens_tenant_id ON honey_tokens (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_honey_tokens_username ON honey_tokens (username);
+CREATE INDEX IF NOT EXISTS idx_webhooks_tenant_id ON webhooks (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_webhooks_trigger_on ON webhooks (trigger_on);

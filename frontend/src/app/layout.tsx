@@ -34,11 +34,13 @@ export default function RootLayout({
               <NavItem href="/" label="Dashboard" />
               <NavItem href="/sessions" label="Sessions" />
               <NavItem href="/alerts" label="Alerts" />
+              <NavItem href="/honey-tokens" label="Honey Tokens" />
+              <NavItem href="/webhooks" label="Webhooks" />
               <NavItem href="/sensors" label="Sensors" />
               <NavItem href="/config" label="Config" />
             </ul>
             <div className="mt-auto pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-600">HoneyAegis v0.4.0</p>
+              <p className="text-xs text-gray-600">HoneyAegis v0.5.0</p>
             </div>
           </nav>
           {/* Mobile nav */}
@@ -47,7 +49,8 @@ export default function RootLayout({
               <MobileNavItem href="/" label="Home" />
               <MobileNavItem href="/sessions" label="Sessions" />
               <MobileNavItem href="/alerts" label="Alerts" />
-              <MobileNavItem href="/sensors" label="Sensors" />
+              <MobileNavItem href="/honey-tokens" label="Tokens" />
+              <MobileNavItem href="/webhooks" label="Hooks" />
               <MobileNavItem href="/config" label="Config" />
             </div>
           </nav>
