@@ -28,6 +28,10 @@ geoip2==4.8.1
 # Alerts
 apprise==1.9.1
 
+# AI
+langchain-core==0.3.28
+langchain-ollama==0.2.3
+
 # Utilities
 python-dotenv==1.0.1
 orjson==3.10.13

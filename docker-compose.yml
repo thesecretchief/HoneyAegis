@@ -124,6 +124,7 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
       OLLAMA_PORT: ${OLLAMA_PORT:-11434}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-phi3:mini}
       ABUSEIPDB_API_KEY: ${ABUSEIPDB_API_KEY:-}
       APPRISE_URLS: ${APPRISE_URLS:-}
       ALERT_ON_NEW_SESSION: ${ALERT_ON_NEW_SESSION:-true}
@@ -192,6 +193,7 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
       OLLAMA_PORT: ${OLLAMA_PORT:-11434}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-phi3:mini}
       ABUSEIPDB_API_KEY: ${ABUSEIPDB_API_KEY:-}
       APPRISE_URLS: ${APPRISE_URLS:-}
     volumes:
@@ -245,6 +247,34 @@ services:
       - ollama_data:/root/.ollama
     ports:
       - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Ollama Model Pull (init container — runs once then exits)
+  # ---------------------------------------------------------------------------
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: honeyaegis-ollama-init
+    profiles:
+      - full
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: >
+      sh -c '
+        echo "[*] Pulling model: ${OLLAMA_MODEL:-phi3:mini}..."
+        curl -sf http://ollama:11434/api/pull -d "{\"name\": \"${OLLAMA_MODEL:-phi3:mini}\"}" &&
+        echo "[+] Model ${OLLAMA_MODEL:-phi3:mini} ready." ||
+        echo "[!] Model pull failed — AI summaries will be unavailable."
+      '
+    restart: "no"
     networks:
       - honeyaegis-internal
 

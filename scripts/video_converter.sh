@@ -4,17 +4,19 @@
 # Converts Cowrie ttylog recordings to MP4 or GIF
 #
 # Usage:
-#   ./scripts/video_converter.sh <ttylog_file> <output_file> [format]
+#   ./scripts/video_converter.sh <ttylog_file> <output_file> [format] [overlay_text]
 #
 #   format: mp4 (default) or gif
+#   overlay_text: optional AI summary text burned into the video
 #
 # Requirements: Python 3, ffmpeg
 # =============================================================================
 set -euo pipefail
 
-TTYLOG="${1:?Usage: video_converter.sh <ttylog_file> <output_file> [format]}"
-OUTPUT="${2:?Usage: video_converter.sh <ttylog_file> <output_file> [format]}"
+TTYLOG="${1:?Usage: video_converter.sh <ttylog_file> <output_file> [format] [overlay_text]}"
+OUTPUT="${2:?Usage: video_converter.sh <ttylog_file> <output_file> [format] [overlay_text]}"
 FORMAT="${3:-mp4}"
+OVERLAY_TEXT="${4:-}"
 
 TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
@@ -123,9 +125,19 @@ with open('$ASCIICAST') as f:
     print(h.get('duration', 10))
 ")
 
+# Build video filter — terminal text + optional AI overlay banner
+VF="drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf:textfile=$TEMP_DIR/frame_000000.txt:fontcolor=green:fontsize=14:x=10:y=10"
+
+if [ -n "$OVERLAY_TEXT" ]; then
+    # Escape special characters for ffmpeg drawtext
+    SAFE_OVERLAY=$(echo "$OVERLAY_TEXT" | sed "s/'/'\\\\''/g; s/:/\\\\:/g; s/%/%%/g")
+    # Add a semi-transparent banner at the bottom with AI summary
+    VF="$VF,drawbox=x=0:y=ih-40:w=iw:h=40:color=black@0.7:t=fill,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf:text='$SAFE_OVERLAY':fontcolor=yellow:fontsize=13:x=10:y=h-30"
+fi
+
 # Simple approach: create video from asciicast using drawtext
 ffmpeg -y -f lavfi -i "color=c=black:s=1280x720:d=$DURATION:r=10" \
-    -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf:textfile=$TEMP_DIR/frame_000000.txt:fontcolor=green:fontsize=14:x=10:y=10" \
+    -vf "$VF" \
     -c:v libx264 -preset fast -crf 28 \
     "$TEMP_DIR/output.mp4" 2>/dev/null || true
 

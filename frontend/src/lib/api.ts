@@ -223,6 +223,115 @@ export async function acknowledgeAllAlerts(): Promise<void> {
   await apiFetch("/api/v1/alerts/acknowledge-all", { method: "POST" });
 }
 
+// -- AI Summary API ---------------------------------------------------------
+
+export interface AISummary {
+  id: string;
+  session_id: string;
+  summary: string;
+  threat_level: string | null;
+  mitre_ttps: string[];
+  recommendations: string | null;
+  model_used: string | null;
+  created_at: string;
+}
+
+export interface AIStatus {
+  enabled: boolean;
+  available: boolean;
+  model: string;
+}
+
+export async function getAIStatus(): Promise<AIStatus> {
+  return apiFetch<AIStatus>("/api/v1/sessions/ai/status");
+}
+
+export async function getAISummary(sessionId: string): Promise<AISummary | null> {
+  return apiFetch<AISummary | null>(`/api/v1/sessions/${sessionId}/ai-summary`);
+}
+
+export async function generateAISummary(sessionId: string): Promise<AISummary> {
+  return apiFetch<AISummary>(`/api/v1/sessions/${sessionId}/ai-summary`, {
+    method: "POST",
+  });
+}
+
+// -- Sensors API ------------------------------------------------------------
+
+export interface Sensor {
+  id: string;
+  sensor_id: string;
+  name: string;
+  hostname: string | null;
+  ip_address: string | null;
+  status: string;
+  last_seen: string | null;
+  config: Record<string, unknown>;
+  session_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getSensors(): Promise<{ sensors: Sensor[]; total: number }> {
+  return apiFetch("/api/v1/sensors/");
+}
+
+export async function registerSensor(data: {
+  sensor_id: string;
+  name: string;
+  hostname?: string;
+  ip_address?: string;
+}): Promise<Sensor> {
+  return apiFetch<Sensor>("/api/v1/sensors/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSensor(sensorId: string): Promise<void> {
+  await apiFetch(`/api/v1/sensors/${sensorId}`, { method: "DELETE" });
+}
+
+// -- Config API -------------------------------------------------------------
+
+export interface HoneypotConfig {
+  name: string;
+  enabled: boolean;
+  ports: number[];
+  description: string;
+}
+
+export interface AlertRuleConfig {
+  alert_on_new_session: boolean;
+  alert_on_malware_capture: boolean;
+  cooldown_minutes: number;
+  apprise_urls: string[];
+}
+
+export interface PlatformConfig {
+  honeypots: HoneypotConfig[];
+  alert_rules: AlertRuleConfig;
+  silence_windows: unknown[];
+  ai_enabled: boolean;
+  ai_model: string;
+  fleet_mode: string;
+}
+
+export async function getPlatformConfig(): Promise<PlatformConfig> {
+  return apiFetch<PlatformConfig>("/api/v1/config/");
+}
+
+export async function updateAlertRules(data: {
+  alert_on_new_session?: boolean;
+  alert_on_malware_capture?: boolean;
+  cooldown_minutes?: number;
+}): Promise<void> {
+  await apiFetch("/api/v1/config/alerts", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 // -- WebSocket --------------------------------------------------------------
 
 export function connectWebSocket(

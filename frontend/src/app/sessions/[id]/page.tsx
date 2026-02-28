@@ -7,10 +7,13 @@ import {
   getSessionCommands,
   getSessionReplay,
   getVideoExportUrl,
+  getAISummary,
+  generateAISummary,
   getToken,
   type Session,
   type SessionCommand,
   type ReplayData,
+  type AISummary,
 } from "@/lib/api";
 
 export default function SessionDetailPage() {
@@ -22,6 +25,8 @@ export default function SessionDetailPage() {
   const [replayPlaying, setReplayPlaying] = useState(false);
   const [replayOutput, setReplayOutput] = useState("");
   const [replayProgress, setReplayProgress] = useState(0);
+  const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"commands" | "replay">(
     "commands",
@@ -49,6 +54,14 @@ export default function SessionDetailPage() {
         } catch {
           // replay not available
         }
+
+        // Try loading AI summary
+        try {
+          const summaryData = await getAISummary(sessionId);
+          setAiSummary(summaryData);
+        } catch {
+          // AI summary not available
+        }
       } catch {
         // handled by API client
       } finally {
@@ -58,6 +71,18 @@ export default function SessionDetailPage() {
 
     fetchData();
   }, [sessionId]);
+
+  async function handleGenerateAISummary() {
+    setAiGenerating(true);
+    try {
+      const summary = await generateAISummary(sessionId);
+      setAiSummary(summary);
+    } catch {
+      // AI not available
+    } finally {
+      setAiGenerating(false);
+    }
+  }
 
   async function playReplay() {
     if (!replay) return;
@@ -184,6 +209,78 @@ export default function SessionDetailPage() {
           label="Started"
           value={new Date(session.started_at).toLocaleString()}
         />
+      </div>
+
+      {/* AI Threat Summary */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-300">
+            AI Threat Analysis
+          </h3>
+          <button
+            onClick={handleGenerateAISummary}
+            disabled={aiGenerating}
+            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-xs font-semibold text-white disabled:opacity-50 transition-colors"
+          >
+            {aiGenerating
+              ? "Analyzing..."
+              : aiSummary
+                ? "Regenerate"
+                : "Generate Summary"}
+          </button>
+        </div>
+
+        {aiSummary ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
+                  aiSummary.threat_level === "critical"
+                    ? "bg-red-900/60 text-red-400"
+                    : aiSummary.threat_level === "high"
+                      ? "bg-orange-900/60 text-orange-400"
+                      : aiSummary.threat_level === "medium"
+                        ? "bg-yellow-900/60 text-yellow-400"
+                        : aiSummary.threat_level === "low"
+                          ? "bg-blue-900/60 text-blue-400"
+                          : "bg-gray-800 text-gray-400"
+                }`}
+              >
+                {aiSummary.threat_level}
+              </span>
+              <span className="text-xs text-gray-600">
+                via {aiSummary.model_used}
+              </span>
+            </div>
+            <p className="text-sm text-gray-300 leading-relaxed">
+              {aiSummary.summary}
+            </p>
+            {aiSummary.mitre_ttps && aiSummary.mitre_ttps.length > 0 && (
+              <div>
+                <span className="text-xs text-gray-500">MITRE ATT&CK: </span>
+                {aiSummary.mitre_ttps.map((ttp) => (
+                  <span
+                    key={ttp}
+                    className="inline-block px-1.5 py-0.5 bg-red-900/30 text-red-400 rounded text-xs font-mono mr-1"
+                  >
+                    {ttp}
+                  </span>
+                ))}
+              </div>
+            )}
+            {aiSummary.recommendations && (
+              <p className="text-xs text-gray-500 italic">
+                {aiSummary.recommendations}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-600">
+            {aiGenerating
+              ? "Running AI analysis..."
+              : "Click Generate to create an AI-powered threat summary for this session."}
+          </p>
+        )}
       </div>
 
       {/* Tabs */}

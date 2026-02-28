@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     ollama_host: str = "ollama"
     ollama_port: int = 11434
     ollama_enabled: bool = False
+    ollama_model: str = "phi3:mini"
 
     # GeoIP
     geoip_db_path: str = "/data/geoip/GeoLite2-City.mmdb"

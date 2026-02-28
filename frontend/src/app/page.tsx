@@ -5,12 +5,14 @@ import dynamic from "next/dynamic";
 import {
   getSessionStats,
   getSessions,
+  getSensors,
   connectWebSocket,
   getToken,
   type SessionStats,
   type Session,
   type WSEvent,
 } from "@/lib/api";
+import { CardSkeleton, TableSkeleton } from "@/components/LoadingSkeleton";
 
 const AttackMap = dynamic(() => import("@/components/AttackMap"), {
   ssr: false,
@@ -25,6 +27,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<SessionStats | null>(null);
   const [recentSessions, setRecentSessions] = useState<Session[]>([]);
   const [liveEvents, setLiveEvents] = useState<WSEvent[]>([]);
+  const [sensorCount, setSensorCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -35,14 +39,18 @@ export default function DashboardPage() {
 
     async function fetchData() {
       try {
-        const [statsData, sessionsData] = await Promise.all([
+        const [statsData, sessionsData, sensorsData] = await Promise.all([
           getSessionStats(),
           getSessions({ limit: 10 }),
+          getSensors().catch(() => ({ sensors: [], total: 0 })),
         ]);
         setStats(statsData);
         setRecentSessions(sessionsData.sessions);
+        setSensorCount(sensorsData.total);
       } catch (err) {
         setError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -64,6 +72,25 @@ export default function DashboardPage() {
     return (
       <div className="p-8">
         <p className="text-red-400">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-300 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+        <CardSkeleton count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          <TableSkeleton rows={5} />
+          <TableSkeleton rows={5} />
+        </div>
       </div>
     );
   }
@@ -99,8 +126,8 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="Active Sensors"
-          value="1"
-          subtitle="Cowrie SSH/Telnet"
+          value={sensorCount.toString() || "0"}
+          subtitle="Registered fleet sensors"
           color="text-green-400"
         />
       </div>

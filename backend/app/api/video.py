@@ -15,7 +15,10 @@ from app.core.database import get_db
 from app.api.auth import get_current_user
 from app.api.replay import parse_ttylog, COWRIE_TTY_BASE
 from app.models.session import Session
+from app.models.command import Command
+from app.models.download import Download
 from app.models.user import User
+from app.services.ai_service import generate_video_overlay
 
 logger = logging.getLogger(__name__)
 
@@ -65,14 +68,48 @@ async def export_session_video(
             detail="No ttylog recording found for this session. Video export requires a tty recording.",
         )
 
+    # Generate AI overlay text for the video
+    overlay_text = ""
+    try:
+        cmd_result = await db.execute(
+            select(Command.command)
+            .where(Command.session_id == session_id)
+            .order_by(Command.timestamp)
+        )
+        commands = [row[0] for row in cmd_result.all()]
+
+        dl_result = await db.execute(
+            select(Download.filename, Download.url, Download.file_hash_sha256)
+            .where(Download.session_id == session_id)
+        )
+        downloads = [
+            {"filename": row[0], "url": row[1], "sha256": row[2]}
+            for row in dl_result.all()
+        ]
+
+        session_data = {
+            "src_ip": str(session.src_ip),
+            "username": session.username,
+            "duration_seconds": session.duration_seconds or 0,
+            "commands": commands,
+            "downloads": downloads,
+        }
+        overlay_text = await generate_video_overlay(session_data)
+    except Exception as e:
+        logger.debug("Video overlay generation skipped: %s", e)
+
     # Run converter script
     script_path = Path("/app/scripts/video_converter.sh")
     if not script_path.exists():
         script_path = Path("scripts/video_converter.sh")
 
     try:
+        cmd_args = ["bash", str(script_path), str(ttylog_path), str(cache_file), format]
+        if overlay_text:
+            cmd_args.append(overlay_text)
+
         proc = await asyncio.create_subprocess_exec(
-            "bash", str(script_path), str(ttylog_path), str(cache_file), format,
+            *cmd_args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
