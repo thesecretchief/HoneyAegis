@@ -220,6 +220,12 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
             if ttylog:
                 session.ttylog_file = ttylog
 
+            # Auto-generate AI summary on session close (non-blocking)
+            try:
+                await _auto_summarize_session(session, db)
+            except Exception as e:
+                logger.debug("Auto-summarize skipped: %s", e)
+
         _active_sessions.pop(session_key, None)
 
         broadcast_data = {
@@ -248,6 +254,62 @@ async def process_cowrie_event(event_data: dict, db: AsyncSession) -> dict | Non
     db.add(event)
 
     return broadcast_data
+
+
+async def _auto_summarize_session(session: Session, db: AsyncSession) -> None:
+    """Generate an AI summary when a session closes (if Ollama is enabled)."""
+    from app.services.ai_service import generate_session_summary, is_ai_enabled
+    from app.models.ai_summary import AISummary
+    from app.models.command import Command
+    from app.models.download import Download
+
+    if not await is_ai_enabled():
+        return
+
+    # Gather session data
+    cmd_result = await db.execute(
+        select(Command.command)
+        .where(Command.session_id == session.id)
+        .order_by(Command.timestamp)
+    )
+    commands = [row[0] for row in cmd_result.all()]
+
+    dl_result = await db.execute(
+        select(Download.filename, Download.url, Download.file_hash_sha256)
+        .where(Download.session_id == session.id)
+    )
+    downloads = [
+        {"filename": row[0], "url": row[1], "sha256": row[2]}
+        for row in dl_result.all()
+    ]
+
+    session_data = {
+        "src_ip": str(session.src_ip),
+        "country_name": session.country_name or "Unknown",
+        "protocol": session.protocol,
+        "dst_port": session.dst_port,
+        "username": session.username,
+        "auth_success": session.auth_success,
+        "duration_seconds": session.duration_seconds or 0,
+        "commands": commands,
+        "downloads": downloads,
+    }
+
+    ai_result = await generate_session_summary(session_data)
+    if ai_result is None:
+        return
+
+    summary = AISummary(
+        id=uuid4(),
+        session_id=session.id,
+        summary=ai_result["summary"],
+        threat_level=ai_result["threat_level"],
+        mitre_ttps=ai_result.get("mitre_ttps", []),
+        recommendations=ai_result.get("recommendations", ""),
+        model_used=ai_result.get("model_used", ""),
+    )
+    db.add(summary)
+    logger.info("AI summary auto-generated for session %s", session.session_id)
 
 
 async def watch_cowrie_logs(log_path: str = "/data/cowrie_logs/cowrie.json"):

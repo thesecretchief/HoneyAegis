@@ -69,7 +69,8 @@ docker compose up -d
 ### 3. Deploy (full profile — all honeypots + AI + monitoring)
 
 ```bash
-docker compose --profile full up -d
+# Enable AI summaries (Ollama downloads phi3:mini on first run ~2GB)
+OLLAMA_ENABLED=true docker compose --profile full up -d
 ```
 
 ### 4. Verify deployment
@@ -168,11 +169,57 @@ cd frontend && npm test
 
 - [x] **Iteration 0** — Foundation: repo skeleton, Docker Compose, Cowrie, CI/CD
 - [x] **Iteration 1** — MVP: session capture, real-time dashboard, alerts, GeoIP, video export
-- [ ] **Iteration 2** — AI integration, fleet management, config UI
+- [x] **Iteration 2** — Enhanced: local AI summaries, fleet management, config UI, polish
 - [ ] **Iteration 3** — MSP: multi-tenant, client portals, reports
 - [ ] **Iteration 4+** — Kubernetes, honey tokens, plugin marketplace
 
-## Features (Iteration 1 MVP)
+## Features (Iteration 2 — Enhanced)
+
+### Local AI Threat Analysis
+- **Ollama integration** — 100% local LLM inference, no data leaves your network
+- **Auto-summarize** — AI generates threat summaries on session close
+- **MITRE ATT&CK mapping** — automatic TTP identification (e.g. T1078, T1059.004)
+- **Threat scoring** — AI assigns critical/high/medium/low/info threat levels
+- **Video overlay** — AI summary burned into exported MP4/GIF as ffmpeg drawtext
+- **On-demand** — regenerate summaries anytime from the session detail page
+
+```
+Example AI Summary:
+┌──────────────────────────────────────────────────────────────┐
+│ Threat Level: HIGH                                           │
+│                                                              │
+│ Attacker from CN (Beijing) brute-forced SSH credentials     │
+│ and gained access as root. Executed reconnaissance commands  │
+│ (whoami, uname -a, cat /etc/passwd) before attempting to    │
+│ download a cryptominer from a known malicious domain.       │
+│                                                              │
+│ MITRE ATT&CK: T1078 (Valid Accounts), T1059.004 (Unix      │
+│ Shell), T1105 (Ingress Tool Transfer)                       │
+│                                                              │
+│ Recommendation: Block source IP and monitor for lateral     │
+│ movement indicators from the same ASN.                      │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Multi-Sensor Fleet Management
+- **Register sensors** — add RPi nodes, VPS instances, homelab servers
+- **Heartbeat monitoring** — track sensor status (online/stale/offline)
+- **Session attribution** — link sessions to specific sensors
+- **Dashboard integration** — fleet-wide sensor count on main dashboard
+
+### Configuration UI
+- **Honeypot management** — view enabled/disabled services and their ports
+- **Alert rules** — toggle session alerts, malware alerts, set cooldown periods
+- **AI status** — check Ollama connection and model availability
+- **Fleet mode** — standalone or hub-and-spoke topology
+
+### Polish
+- **Loading skeletons** — smooth loading states across all pages
+- **Error boundaries** — graceful error recovery with retry buttons
+- **Mobile responsive** — bottom nav bar on mobile, responsive grids
+- **Refined dark theme** — consistent gray-950/900/800 palette throughout
+
+## Features (Iteration 1 — MVP)
 
 ### Real-Time Dashboard
 - **Live stats cards** — attacks today, unique IPs, auth successes, active sensors

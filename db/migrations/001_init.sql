@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS ai_summaries (
     summary TEXT NOT NULL,
     threat_level VARCHAR(20),
     mitre_ttps JSONB DEFAULT '[]',
+    recommendations TEXT,
     model_used VARCHAR(100),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -169,3 +170,4 @@ CREATE INDEX IF NOT EXISTS idx_downloads_session_id ON downloads (session_id);
 CREATE INDEX IF NOT EXISTS idx_downloads_file_hash ON downloads (file_hash_sha256);
 CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts (severity);
 CREATE INDEX IF NOT EXISTS idx_alerts_acknowledged ON alerts (acknowledged);
+CREATE INDEX IF NOT EXISTS idx_ai_summaries_session_id ON ai_summaries (session_id);

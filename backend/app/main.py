@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config
 from app.core.config import settings
 from app.core.database import engine, Base
 
@@ -74,7 +74,7 @@ async def _start_log_watcher():
 app = FastAPI(
     title="HoneyAegis API",
     description="Professional-grade honeypot platform API",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -96,3 +96,6 @@ app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(replay.router, prefix="/api/v1/sessions", tags=["replay"])
 app.include_router(video.router, prefix="/api/v1/sessions", tags=["video"])
 app.include_router(websocket.router, tags=["websocket"])
+app.include_router(ai.router, prefix="/api/v1/sessions", tags=["ai"])
+app.include_router(sensors.router, prefix="/api/v1/sensors", tags=["sensors"])
+app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
