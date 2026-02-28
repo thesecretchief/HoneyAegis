@@ -303,6 +303,25 @@ services:
       - honeyaegis-internal
 
   # ---------------------------------------------------------------------------
+  # Prometheus (Metrics)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.53.3
+    container_name: honeyaegis-prometheus
+    restart: unless-stopped
+    profiles:
+      - full
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - backend
+    networks:
+      - honeyaegis-internal
+
+  # ---------------------------------------------------------------------------
   # Grafana (Monitoring Dashboard)
   # ---------------------------------------------------------------------------
   grafana:
@@ -317,8 +336,12 @@ services:
       GF_INSTALL_PLUGINS: grafana-clock-panel
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "127.0.0.1:3001:3000"
+    depends_on:
+      - prometheus
     networks:
       - honeyaegis-internal
 
@@ -345,4 +368,5 @@ volumes:
   geoip_data:
   ollama_data:
   traefik_certs:
+  prometheus_data:
   grafana_data:

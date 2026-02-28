@@ -526,3 +526,9 @@ export function connectWebSocket(
 
   return ws;
 }
+
+// -- SIEM Export ---------------------------------------------------------------
+
+export async function exportSIEM(format: "json" | "cef" | "syslog", limit = 100): Promise<any> {
+  return apiFetch<any>(`/api/v1/export/${format}?limit=${limit}`);
+}

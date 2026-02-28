@@ -185,7 +185,54 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 2** — Enhanced: local AI summaries, fleet management, config UI, polish
 - [x] **Iteration 3** — MSP: multi-tenant, client portals, PDF/JSON reports, auto-update
 - [x] **Iteration 4** — Advanced: Kubernetes/Helm, honey tokens, webhooks, plugins, RPi blueprints
-- [ ] **Iteration 5+** — SaaS relay, marketplace, advanced threat intelligence
+- [x] **Iteration 5** — Production: Prometheus/Grafana, security scanning, SIEM export, rate limiting, audit logging
+- [ ] **Iteration 6+** — SaaS relay, marketplace, advanced threat intelligence
+
+## Features (Iteration 5 — Production Hardening & Observability)
+
+### Prometheus + Grafana Monitoring
+- **Prometheus metrics** — `/metrics` endpoint with counters, gauges, histograms
+- **Pre-built Grafana dashboard** — 10-panel overview: sessions, alerts, webhooks, API latency, AI summaries
+- **Auto-provisioned** — Grafana datasource and dashboards configured on first boot
+- **Full profile only** — Prometheus + Grafana services available via `docker compose --profile full up -d`
+
+<!-- TODO: Add GIF: Grafana dashboard with live attack data -->
+<!-- ![Grafana Dashboard](docs/assets/grafana-dashboard.gif) -->
+
+### CI Security Scanning
+- **Bandit** — Python static analysis for security issues (fail on high/critical)
+- **Trivy** — Docker image vulnerability scanning (fail on high/critical)
+- **npm audit** — Frontend dependency vulnerability checks
+- **Automated** — security scans run on every push and PR
+
+### SIEM Export
+- **Structured JSON** — `/api/v1/export/json` for custom SIEM ingestion
+- **CEF format** — `/api/v1/export/cef` (Common Event Format) for Splunk, ArcSight, QRadar
+- **Syslog format** — `/api/v1/export/syslog` (RFC 5424) for syslog collectors
+- **Tenant-scoped** — all exports respect tenant isolation
+- **Configurable** — limit and time-range filtering
+
+### Production Hardening
+- **API rate limiting** — token-bucket algorithm (100 req/s global, 10 req/s auth)
+- **Audit logging** — structured JSON audit trail for all security-relevant actions
+- **CEF/Syslog formatters** — export audit events to enterprise SIEMs
+- **Error boundaries** — graceful frontend error recovery on all pages
+- **Accessibility** — ARIA labels on navigation and interactive elements
+
+### Comprehensive Documentation
+- **[Plugin Development Guide](docs/plugin-dev-guide.md)** — API reference, examples, best practices
+- **[Contributing Guide](docs/CONTRIBUTING.md)** — setup, conventions, deployment matrix
+- **[CHANGELOG.md](CHANGELOG.md)** — full version history from v0.1.0 to v0.6.0
+- **[Security Audit Checklist](SECURITY.md)** — vulnerability reporting, architecture, deployment checklist
+
+### Plugin Examples
+- **Auto IP Blocker** — blocks IPs after repeated failed login attempts
+- **Custom Emulator Template** — template for command emulation with suspicious command detection
+
+### v0.6.0 Release
+- Backend v0.6.0, Frontend v0.6.0
+- 122 tests passing (30 new for Iteration 5)
+- Full CI pipeline: lint, build, test, security scan
 
 ## Features (Iteration 4 — Advanced Capabilities)
 
