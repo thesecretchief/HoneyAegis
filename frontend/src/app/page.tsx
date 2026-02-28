@@ -47,7 +47,7 @@ export default function DashboardPage() {
         setStats(statsData);
         setRecentSessions(sessionsData.sessions);
         setSensorCount(sensorsData.total);
-      } catch (err) {
+      } catch {
         setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
@@ -208,12 +208,12 @@ export default function DashboardPage() {
                   </span>{" "}
                   <span className="text-honeyaegis-400">{event.type}</span>{" "}
                   <span className="text-gray-300">{event.src_ip}</span>
-                  {(event as Record<string, unknown>).command && (
+                  {event.command ? (
                     <span className="text-red-400">
                       {" "}
-                      $ {String((event as Record<string, unknown>).command)}
+                      $ {String(event.command)}
                     </span>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>

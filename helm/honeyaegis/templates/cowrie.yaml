@@ -1,0 +1,59 @@
+{{- if .Values.cowrie.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-cowrie
+  labels:
+    app: honeyaegis
+    component: cowrie
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: honeyaegis
+      component: cowrie
+  template:
+    metadata:
+      labels:
+        app: honeyaegis
+        component: cowrie
+    spec:
+      containers:
+        - name: cowrie
+          image: "{{ .Values.cowrie.image.repository }}:{{ .Values.cowrie.image.tag }}"
+          imagePullPolicy: {{ .Values.cowrie.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.cowrie.sshPort }}
+              name: ssh
+            - containerPort: {{ .Values.cowrie.telnetPort }}
+              name: telnet
+          volumeMounts:
+            - name: cowrie-logs
+              mountPath: /cowrie/var/log/cowrie
+            - name: cowrie-downloads
+              mountPath: /cowrie/var/lib/cowrie/downloads
+          resources:
+            {{- toYaml .Values.cowrie.resources | nindent 12 }}
+      volumes:
+        - name: cowrie-logs
+          emptyDir: {}
+        - name: cowrie-downloads
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-cowrie
+spec:
+  selector:
+    app: honeyaegis
+    component: cowrie
+  ports:
+    - port: {{ .Values.cowrie.sshPort }}
+      targetPort: {{ .Values.cowrie.sshPort }}
+      name: ssh
+    - port: {{ .Values.cowrie.telnetPort }}
+      targetPort: {{ .Values.cowrie.telnetPort }}
+      name: telnet
+  type: LoadBalancer
+{{- end }}

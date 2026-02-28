@@ -7,8 +7,7 @@ import {
   getSessionCommands,
   getSessionReplay,
   getVideoExportUrl,
-  getReportJsonUrl,
-  getReportPdfUrl,
+  downloadReport,
   getAISummary,
   generateAISummary,
   getToken,
@@ -153,20 +152,18 @@ export default function SessionDetailPage() {
           </h2>
         </div>
         <div className="flex gap-2">
-          <a
-            href={getReportPdfUrl(sessionId)}
+          <button
+            onClick={() => downloadReport("pdf", sessionId)}
             className="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 rounded-lg text-sm transition-colors text-white"
-            target="_blank"
           >
             PDF Report
-          </a>
-          <a
-            href={getReportJsonUrl(sessionId)}
+          </button>
+          <button
+            onClick={() => downloadReport("json", sessionId)}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition-colors"
-            target="_blank"
           >
             JSON Report
-          </a>
+          </button>
           {replay && (
             <>
               <a

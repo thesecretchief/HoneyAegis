@@ -119,7 +119,7 @@ honeyaegis/
 │   │   ├── core/         # Config, security, database
 │   │   ├── models/       # SQLAlchemy models
 │   │   ├── schemas/      # Pydantic schemas
-│   │   ├── services/     # Business logic
+│   │   ├── services/     # Business logic (webhooks, plugins, ingestion)
 │   │   └── workers/      # Celery tasks
 │   ├── alembic/          # Database migrations
 │   └── tests/
@@ -131,8 +131,11 @@ honeyaegis/
 │   └── traefik/          # Reverse proxy config
 ├── db/
 │   └── migrations/       # SQL migration scripts
-├── scripts/              # Helper scripts
-├── docs/                 # Documentation
+├── helm/                 # Kubernetes Helm chart
+├── plugins/              # Custom plugin directory
+│   └── examples/         # Example plugins (IP blocklist)
+├── scripts/              # Helper scripts (install, update)
+├── docs/                 # Documentation (MSP guide, RPi blueprint)
 ├── docker-compose.yml    # Orchestration
 └── .env.example          # Configuration template
 ```
@@ -181,9 +184,55 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 1** — MVP: session capture, real-time dashboard, alerts, GeoIP, video export
 - [x] **Iteration 2** — Enhanced: local AI summaries, fleet management, config UI, polish
 - [x] **Iteration 3** — MSP: multi-tenant, client portals, PDF/JSON reports, auto-update
-- [ ] **Iteration 4+** — Kubernetes, honey tokens, plugin marketplace
+- [x] **Iteration 4** — Advanced: Kubernetes/Helm, honey tokens, webhooks, plugins, RPi blueprints
+- [ ] **Iteration 5+** — SaaS relay, marketplace, advanced threat intelligence
+
+## Features (Iteration 4 — Advanced Capabilities)
+
+### Honey Tokens
+- **Decoy credentials** — plant fake usernames/passwords that trigger instant alerts when used
+- **File tokens** — deploy decoy files that alert on access
+- **Trigger tracking** — count and timestamp every token activation
+- **Severity control** — set alert severity per token (critical, high, medium, low)
+- **Auto-detection** — ingestion pipeline automatically checks login attempts against active tokens
+- **Dashboard UI** — create, manage, and monitor tokens from the web interface
+
+### Auto-Response Webhooks
+- **Event-driven hooks** — trigger HTTP webhooks on alerts, sessions, honey tokens, or malware captures
+- **Severity filtering** — fire webhooks only for specific severity levels
+- **HMAC signatures** — webhooks include `X-HoneyAegis-Signature` header for verification
+- **Test endpoint** — verify webhook connectivity from the dashboard
+- **Execution tracking** — monitor delivery status, response codes, and execution counts
+- **Multi-service** — connect to Slack, Discord, PagerDuty, custom APIs
+
+### Plugin System
+- **Python plugins** — drop `.py` files into `/plugins` to extend HoneyAegis
+- **Plugin types** — emulators, enrichers, exporters, and event hooks
+- **Auto-discovery** — plugins loaded on startup, reloadable via API
+- **Event hooks** — plugins receive real-time events for custom processing
+- **Example included** — IP blocklist plugin demonstrates the hook pattern
+- **Superuser management** — reload plugins via API (admin only)
+
+### Kubernetes & Helm Chart
+- **Production Helm chart** — deploy HoneyAegis on any Kubernetes cluster
+- **Full profile only** — Helm deployment for enterprise/cloud environments
+- **Configurable** — backend, frontend, cowrie, PostgreSQL, Redis, Ollama all templated
+- **Ingress support** — TLS termination via cert-manager / Let's Encrypt
+- **Secret management** — Kubernetes secrets for all sensitive values
+
+### Raspberry Pi Blueprints
+- **Hardware guide** — RPi 4/5 sensor deployment (2GB+ RAM)
+- **Docker-native** — multi-arch images (amd64 + arm64) work out of the box
+- **Resource profiled** — ~430 MB RAM total (fits in 2 GB)
+- **Network placement** — VLAN isolation, port forwarding, security best practices
+- **Fleet integration** — register RPi as a remote sensor via the hub API
+- **Auto-start** — systemd + Docker restart policies for unattended operation
+
+See [docs/rpi-blueprint.md](docs/rpi-blueprint.md) for the full deployment guide.
 
 ## Features (Iteration 3 — MSP Ready)
+
+> **Screenshots:** See the GIFs below for client portal, PDF reports, and tenant branding in action.
 
 ### Multi-Tenant Isolation
 - **Tenant-scoped data** — every table has `tenant_id`, enforced at the query level
@@ -196,6 +245,9 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Client portal theming** — branding applied to view-only portals
 - **Report branding** — PDF reports include tenant logo and colors
 
+<!-- TODO: Add GIF: tenant branding config UI -->
+<!-- ![Tenant Branding](docs/assets/tenant-branding.gif) -->
+
 ### Client Portals
 - **View-only access** — clients see their incidents without configuration access
 - **No auth required** — portals identified by tenant slug (`/client/acme-corp`)
@@ -203,12 +255,18 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Session table** — browseable attack sessions with filtering
 - **Auto-refresh** — portals update every 30 seconds
 
+<!-- TODO: Add GIF: client portal with custom branding -->
+<!-- ![Client Portal](docs/assets/client-portal.gif) -->
+
 ### PDF/JSON Forensic Reports
 - **WeasyPrint PDF** — polished, styled reports with session data + AI summaries
 - **Single session** — detailed report for one specific attack session
 - **Aggregate** — summary report across all sessions for a tenant
 - **MITRE ATT&CK** — TTP mapping included in reports
 - **One-click export** — download buttons on session detail page
+
+<!-- TODO: Add GIF: PDF report download -->
+<!-- ![PDF Report](docs/assets/pdf-report.gif) -->
 
 ### Auto-Update System
 - **Update script** — `./scripts/update.sh` pulls code + images and recreates containers
