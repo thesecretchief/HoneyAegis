@@ -40,7 +40,7 @@ def test_metrics_contain_app_info():
     """Metrics output contains application info."""
     output = get_metrics().decode()
     assert "honeyaegis_info" in output
-    assert "0.6.0" in output
+    assert "1.0.0" in output
 
 
 def test_http_requests_counter():

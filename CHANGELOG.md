@@ -5,6 +5,22 @@ All notable changes to HoneyAegis are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-02-28
+
+### Added
+- **GitHub Release workflow** — automated release with multi-arch Docker images, changelog extraction, sensor compose artifact
+- **Raspberry Pi one-click setup** — `scripts/rpi-setup.sh` with architecture detection, Docker install, password generation, and deployment
+- **Hosted console API stubs** — `/api/v1/console/` endpoints for future multi-deployment management (stats, deployments, license, heartbeat)
+- **Plugin template** — `plugins/template/` with documented boilerplate for custom plugin development
+- **Community governance** — CODEOWNERS, bug report template, feature request template, PR template
+- **Enhanced metadata** — SEO meta tags, theme-color, robots directive on frontend
+- **v1.0.0 release** — first stable release of HoneyAegis
+
+### Changed
+- All versions bumped to 1.0.0 (backend, frontend, Helm chart, metrics, health endpoint)
+- README updated with v1.0.0 features and completed roadmap
+- Helm chart appVersion bumped to 1.0.0
+
 ## [0.6.0] - 2026-02-28
 
 ### Added

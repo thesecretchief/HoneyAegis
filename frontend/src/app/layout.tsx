@@ -3,7 +3,13 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HoneyAegis Dashboard",
-  description: "Professional-grade honeypot platform dashboard",
+  description: "Professional-grade honeypot platform dashboard — real-time attack monitoring, session replay, AI threat analysis",
+  keywords: ["honeypot", "security", "deception", "monitoring", "threat-intelligence"],
+  authors: [{ name: "HoneyAegis Community" }],
+  robots: "noindex, nofollow",
+  other: {
+    "theme-color": "#f59e0b",
+  },
 };
 
 export default function RootLayout({
@@ -40,7 +46,7 @@ export default function RootLayout({
               <NavItem href="/config" label="Config" />
             </ul>
             <div className="mt-auto pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-600">HoneyAegis v0.6.0</p>
+              <p className="text-xs text-gray-600">HoneyAegis v1.0.0</p>
             </div>
           </nav>
           {/* Mobile nav */}

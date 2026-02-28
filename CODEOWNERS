@@ -1,0 +1,26 @@
+# HoneyAegis Code Owners
+# These owners will be requested for review on PRs that touch their areas.
+
+# Global — project lead reviews all changes
+* @thesecretchief
+
+# Backend
+/backend/ @thesecretchief
+
+# Frontend
+/frontend/ @thesecretchief
+
+# Infrastructure
+/docker-compose.yml @thesecretchief
+/helm/ @thesecretchief
+/.github/workflows/ @thesecretchief
+
+# Security-sensitive files
+/SECURITY.md @thesecretchief
+/backend/app/core/security.py @thesecretchief
+/backend/app/api/auth.py @thesecretchief
+/backend/app/services/rate_limiter.py @thesecretchief
+
+# Documentation
+/docs/ @thesecretchief
+/README.md @thesecretchief
