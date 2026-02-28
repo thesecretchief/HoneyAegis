@@ -124,9 +124,16 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
       OLLAMA_PORT: ${OLLAMA_PORT:-11434}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      ABUSEIPDB_API_KEY: ${ABUSEIPDB_API_KEY:-}
+      APPRISE_URLS: ${APPRISE_URLS:-}
+      ALERT_ON_NEW_SESSION: ${ALERT_ON_NEW_SESSION:-true}
+      ALERT_ON_MALWARE_CAPTURE: ${ALERT_ON_MALWARE_CAPTURE:-true}
+      ALERT_COOLDOWN_MINUTES: ${ALERT_COOLDOWN_MINUTES:-5}
     volumes:
       - cowrie_logs:/data/cowrie_logs:ro
       - cowrie_downloads:/data/cowrie_downloads:ro
+      - geoip_data:/data/geoip:ro
+      - ./scripts:/app/scripts:ro
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -185,9 +192,12 @@ services:
       OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
       OLLAMA_PORT: ${OLLAMA_PORT:-11434}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      ABUSEIPDB_API_KEY: ${ABUSEIPDB_API_KEY:-}
+      APPRISE_URLS: ${APPRISE_URLS:-}
     volumes:
       - cowrie_logs:/data/cowrie_logs:ro
       - cowrie_downloads:/data/cowrie_downloads:ro
+      - geoip_data:/data/geoip:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -304,6 +314,7 @@ volumes:
   redis_data:
   cowrie_logs:
   cowrie_downloads:
+  geoip_data:
   ollama_data:
   traefik_certs:
   grafana_data:

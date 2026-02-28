@@ -53,7 +53,7 @@
 
 ---
 
-## Iteration 1: MVP -- "StingBox Killer Core" (Weeks 2-4)
+## Iteration 1: MVP -- "StingBox Killer Core" (Weeks 2-4) -- COMPLETE
 
 **Goal:** Deliver a functional honeypot with real-time dashboard and alerting.
 
@@ -61,16 +61,19 @@
 
 | # | Deliverable | Status |
 |---|---|---|
-| 1.1 | Full session capture pipeline (Cowrie -> Vector -> Backend -> DB) | Pending |
-| 1.2 | Asciinema session replay in dashboard | Pending |
-| 1.3 | ttyrec -> MP4/GIF video converter (ffmpeg) | Pending |
-| 1.4 | Real-time dashboard with WebSocket updates | Pending |
-| 1.5 | Incidents list with filtering and search | Pending |
-| 1.6 | Live attack map (Leaflet + GeoIP) | Pending |
-| 1.7 | Statistics panel (Recharts) | Pending |
-| 1.8 | Email + webhook alerts (Apprise) | Pending |
-| 1.9 | GeoIP enrichment (MaxMind GeoLite2) | Pending |
-| 1.10 | AbuseIPDB reputation enrichment | Pending |
+| 1.1 | Full session capture pipeline (Cowrie -> Backend file watcher -> DB) | Done |
+| 1.2 | Asciinema session replay in dashboard (ttylog parser + browser player) | Done |
+| 1.3 | ttyrec -> MP4/GIF video converter (ffmpeg) | Done |
+| 1.4 | Real-time dashboard with WebSocket live feed | Done |
+| 1.5 | Incidents list with filtering, pagination, and risk scoring | Done |
+| 1.6 | Live attack map (Leaflet + GeoIP + dark CARTO tiles) | Done |
+| 1.7 | Statistics panel (top countries, ports, usernames, daily stats) | Done |
+| 1.8 | Email + webhook + ntfy alerts (Apprise + Celery) | Done |
+| 1.9 | GeoIP enrichment (MaxMind GeoLite2 + ip-api.com fallback) | Done |
+| 1.10 | AbuseIPDB reputation enrichment (optional) | Done |
+| 1.11 | Login page with JWT authentication | Done |
+| 1.12 | Session detail page with commands + replay + video export | Done |
+| 1.13 | Alerts page with severity badges + acknowledge action | Done |
 
 ---
 

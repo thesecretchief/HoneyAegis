@@ -19,6 +19,11 @@ class SessionResponse(BaseModel):
     commands_count: int
     started_at: datetime
     ended_at: datetime | None
+    country_code: str | None = None
+    country_name: str | None = None
+    city: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
     model_config = {"from_attributes": True}
 
@@ -32,3 +37,20 @@ class SessionStats(BaseModel):
     total_sessions: int
     unique_source_ips: int
     successful_auths: int
+    sessions_today: int = 0
+    unique_ips_today: int = 0
+    top_ports: list[dict] = []
+    top_countries: list[dict] = []
+    top_usernames: list[dict] = []
+
+
+class GeoPoint(BaseModel):
+    """A single point on the attack map."""
+    src_ip: str
+    latitude: float
+    longitude: float
+    country_code: str
+    country_name: str
+    city: str | None = None
+    session_count: int = 1
+    last_seen: datetime | None = None

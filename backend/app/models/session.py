@@ -31,3 +31,10 @@ class Session(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+
+    # GeoIP enrichment
+    country_code: Mapped[str | None] = mapped_column(String(2))
+    country_name: Mapped[str | None] = mapped_column(String(100))
+    city: Mapped[str | None] = mapped_column(String(255))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)

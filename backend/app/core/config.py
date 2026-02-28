@@ -37,6 +37,19 @@ class Settings(BaseSettings):
     ollama_port: int = 11434
     ollama_enabled: bool = False
 
+    # GeoIP
+    geoip_db_path: str = "/data/geoip/GeoLite2-City.mmdb"
+    maxmind_license_key: str = ""
+
+    # AbuseIPDB
+    abuseipdb_api_key: str = ""
+
+    # Alerts (Apprise)
+    apprise_urls: str = ""
+    alert_on_new_session: bool = True
+    alert_on_malware_capture: bool = True
+    alert_cooldown_minutes: int = 5
+
     @property
     def database_url(self) -> str:
         return (
