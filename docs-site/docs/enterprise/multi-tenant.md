@@ -33,4 +33,4 @@ Per-tenant branding includes:
 - Primary color
 - Custom client portal URL
 
-See the [MSP Guide](../../docs/msp-guide.md) for detailed setup instructions.
+See the [MSP guide](https://github.com/thesecretchief/HoneyAegis/blob/main/docs/msp-guide.md) for detailed setup instructions.

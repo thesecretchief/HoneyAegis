@@ -113,10 +113,10 @@ DOMAIN_PATTERN = re.compile(
 # Hash computation
 # ---------------------------------------------------------------------------
 def compute_hashes(data: bytes) -> tuple[str, str, str]:
-    """Compute MD5, SHA1, SHA256 of raw bytes."""
+    """Compute MD5, SHA1, SHA256 of raw bytes (identification only, not security)."""
     return (
-        hashlib.md5(data).hexdigest(),
-        hashlib.sha1(data).hexdigest(),
+        hashlib.md5(data, usedforsecurity=False).hexdigest(),
+        hashlib.sha1(data, usedforsecurity=False).hexdigest(),
         hashlib.sha256(data).hexdigest(),
     )
 

@@ -1,4 +1,5 @@
-export { translations } from "./translations";
+import { translations } from "./translations";
+export { translations };
 export type { Locale, Translations } from "./translations";
 
 const STORAGE_KEY = "honeyaegis-locale";

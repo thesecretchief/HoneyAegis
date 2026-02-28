@@ -223,6 +223,36 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
   Flower: http://localhost:5555 (task monitoring)
 ```
 
+```
+ Celery Flower — Task Monitoring Dashboard
+ ──────────────────────────────────────────────────────────
+  ┌────────────────────────────────────────────────────────┐
+  │  ■ Flower                        Workers: 2 │ Online  │
+  ├────────────────────────────────────────────────────────┤
+  │                                                        │
+  │  Active Tasks: 3    │ Processed: 14,892  │ Failed: 2   │
+  │  Reserved: 0        │ Retried: 7         │ Avg: 0.23s  │
+  │                                                        │
+  │  Workers                                               │
+  │  ┌──────────────┬────────┬──────────┬─────────────────┐│
+  │  │ Worker       │ Status │ Active   │ Processed       ││
+  │  ├──────────────┼────────┼──────────┼─────────────────┤│
+  │  │ worker-1     │ Online │ 2        │ 7,446           ││
+  │  │ worker-2     │ Online │ 1        │ 7,446           ││
+  │  └──────────────┴────────┴──────────┴─────────────────┘│
+  │                                                        │
+  │  Recent Tasks                                          │
+  │  ┌────────────────────┬──────────┬─────────┬──────────┐│
+  │  │ Task               │ State    │ Worker  │ Runtime  ││
+  │  ├────────────────────┼──────────┼─────────┼──────────┤│
+  │  │ enrich_geoip       │ SUCCESS  │ wrk-1   │ 0.12s    ││
+  │  │ send_alert         │ SUCCESS  │ wrk-2   │ 0.34s    ││
+  │  │ convert_video      │ STARTED  │ wrk-1   │ 1.20s    ││
+  │  └────────────────────┴──────────┴─────────┴──────────┘│
+  └────────────────────────────────────────────────────────┘
+  Redis Sentinel: 3/3 nodes │ PG Replication: primary + 1 replica
+```
+
 ### Role-Based Access Control (RBAC)
 - **4 roles** — superadmin, admin, analyst, viewer with hierarchical permissions
 - **25+ permissions** — granular access control (sessions:read, alerts:manage, users:manage, etc.)
@@ -255,6 +285,34 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Group → role mapping** — OIDC groups automatically map to RBAC roles
 - **Provider status** — `/api/v1/sso/status` for configuration health checks
 
+```
+ SSO — Enterprise Login Flow
+ ──────────────────────────────────────────────────────────
+  ┌────────────────────────────────────────────────────────┐
+  │               ■ HoneyAegis Login                       │
+  │                                                        │
+  │  ┌──────────────────────────────────────────────────┐  │
+  │  │  ✉  Email     [ admin@acme.com             ]    │  │
+  │  │  🔒 Password  [ ••••••••••••••••            ]    │  │
+  │  │                                                  │  │
+  │  │           [ Sign In with Password ]              │  │
+  │  └──────────────────────────────────────────────────┘  │
+  │                    ── or ──                             │
+  │  ┌──────────────────────────────────────────────────┐  │
+  │  │  ▸ Sign in with Keycloak                         │  │
+  │  │  ▸ Sign in with Okta                             │  │
+  │  │  ▸ Sign in with Azure AD                         │  │
+  │  │  ▸ Sign in with Google Workspace                 │  │
+  │  └──────────────────────────────────────────────────┘  │
+  │                                                        │
+  │  SSO Status: ✓ Keycloak (configured)                   │
+  │              ○ Okta (template only)                     │
+  │              ○ Azure AD (template only)                 │
+  │              ○ Google (template only)                   │
+  └────────────────────────────────────────────────────────┘
+  Flow: Browser → IdP → Authorization Code → /api/v1/sso/callback → JWT
+```
+
 ### Advanced Reporting Dashboard
 - **Executive report** — aggregated threat summary for 24h / 7d / 30d / 90d periods
 - **Risk scoring** — 0-100 composite score with low/medium/high/critical levels
@@ -280,11 +338,69 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - **Security audit** — 12-point checklist across auth, network, data, and CI/CD categories
 - **Lighthouse targets** — performance 98, accessibility 98, best practices 96, SEO 98
 
+```
+ Scaling Metrics — Performance Benchmarks
+ ──────────────────────────────────────────────────────────
+  System Health Report
+  ┌────────────────────────────────────────────────────────┐
+  │ API Latency (p50/p95/p99)    8ms / 42ms / 127ms       │
+  │ Throughput                   2,847 req/s               │
+  │ Active WebSockets            12                        │
+  │ Celery Queue Depth           3                         │
+  │ DB Pool (active/idle)        4 / 16                    │
+  │ Redis Memory                 48 MB / 256 MB            │
+  │ Uptime                       14d 6h 32m                │
+  └────────────────────────────────────────────────────────┘
+
+  Lighthouse Targets:
+  ┌────────────────┬──────┬────────────────────────────────┐
+  │ Category       │Score │ Bar                            │
+  ├────────────────┼──────┼────────────────────────────────┤
+  │ Performance    │  98  │ ████████████████████░  98/100  │
+  │ Accessibility  │  98  │ ████████████████████░  98/100  │
+  │ Best Practices │  96  │ ███████████████████░░  96/100  │
+  │ SEO            │  98  │ ████████████████████░  98/100  │
+  └────────────────┴──────┴────────────────────────────────┘
+
+  Security Audit: 12/12 pass │ ✓ Auth ✓ Network ✓ Data ✓ CI/CD
+  Flower Dashboard: http://localhost:5555 (task monitoring)
+```
+
 ### Documentation Site (MkDocs Material)
 - **Full docs site** — `docs-site/` with MkDocs Material theme, dark/light mode, search
 - **Auto-deploy** — GitHub Pages deployment via `.github/workflows/docs.yml`
 - **Sections** — Getting Started, Architecture, Features, Enterprise, API Reference, Plugins, Deployment, Contributing
 - **Enterprise docs** — RBAC, SSO, HA, Reporting, Multi-Tenant, Audit Logging
+
+```
+ MkDocs Documentation Site — thesecretchief.github.io/HoneyAegis
+ ──────────────────────────────────────────────────────────
+  ┌────────────────────────────────────────────────────────┐
+  │  ■ HoneyAegis Docs                    🔍 Search...     │
+  ├──────────┬─────────────────────────────────────────────┤
+  │          │                                             │
+  │ Home     │  # Getting Started                          │
+  │          │                                             │
+  │ ▼ Get    │  Deploy HoneyAegis in under 5 minutes:     │
+  │  Started │                                             │
+  │  Quick   │  ```bash                                    │
+  │  Config  │  git clone .../HoneyAegis.git               │
+  │  Deploy  │  cd HoneyAegis && cp .env.example .env      │
+  │          │  docker compose up -d                        │
+  │ ▼ Arch   │  ```                                        │
+  │  Overview│                                             │
+  │  Data    │  !!! note "Light Profile"                    │
+  │  Security│      Default profile uses < 2 GB RAM        │
+  │          │                                             │
+  │ ▼ Feats  │  ## Next Steps                               │
+  │ ▼ Enter  │  - [Dashboard](features/dashboard.md)       │
+  │ ▼ API    │  - [AI Analysis](features/ai-analysis.md)   │
+  │ ▼ Plugin │  - [RBAC](enterprise/rbac.md)               │
+  │ ▼ Deploy │                                             │
+  │ ▼ Contrib│  Dark/Light: ☀ ⬡  │  GitHub ⬡               │
+  └──────────┴─────────────────────────────────────────────┘
+  8 sections │ 28 pages │ Full-text search │ GitHub Pages
+```
 
 ### Public Launch Finalization
 - **[Blog post](docs/launch/blog-post.md)** — v1.1 announcement with feature summary and call-to-action
