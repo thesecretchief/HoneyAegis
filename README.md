@@ -188,6 +188,48 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 5** — Production: Prometheus/Grafana, security scanning, SIEM export, rate limiting, audit logging
 - [x] **Iteration 6** — v1.0.0: Release workflow, RPi one-click setup, console API, community governance, plugin template
 - [x] **Iteration 7** — Final: E2E testing (Playwright), performance caching, deployment matrix, security audit, v1.0 release
+- [x] **Iteration 8** — SaaS: relay backend, Stripe billing, plugin marketplace, hardware kits, launch assets
+
+## Features (Iteration 8 — SaaS Relay, Hardware Kits & Public Launch)
+
+### SaaS Relay Backend
+- **NAT traversal** — sensors behind firewalls connect to a central relay for log shipping
+- **Heartbeat monitoring** — 60-second heartbeat with CPU, memory, disk, and session metrics
+- **Event batching** — bulk relay of Cowrie events from remote sensors to ingestion pipeline
+- **Token authentication** — Bearer token validation for sensor-to-hub communication
+- **Connected sensor listing** — real-time view of all sensors connected to the relay
+
+### Stripe Billing Integration
+- **Three-tier pricing** — Community (free), Pro ($29/mo), Enterprise ($99/mo)
+- **Checkout sessions** — Stripe-powered upgrade flow (stub, ready for production keys)
+- **Webhook handling** — subscription lifecycle events (created, updated, cancelled, failed)
+- **Customer portal** — self-service subscription management via Stripe Portal
+- **Usage tracking** — sensor count and daily event volume per tenant
+
+### Plugin Marketplace
+- **Community registry** — browse, search, and filter plugins by category
+- **One-click install** — install plugins from the marketplace into your deployment
+- **Plugin submission** — submit your plugins for community review and publishing
+- **Categories** — enrichment, response, notification, emulator plugins
+- **Frontend UI** — full marketplace page with search, category filters, and install buttons
+
+### Hardware Kits & MSP Packaging
+- **[Kit A ($89)](docs/hardware-kit-guide.md)** — RPi 4 sensor node with pre-flashed SD card
+- **[Kit B ($119)](docs/hardware-kit-guide.md)** — RPi 5 sensor node with active cooling
+- **[Kit C ($249)](docs/hardware-kit-guide.md)** — Intel N100 enterprise appliance
+- **Assembly guide** — step-by-step hardware setup, network config, hub registration
+- **MSP white-label** — bulk provisioning, custom branding, pricing guidelines
+- **Pre-built images** — SD card image creation guide for MSP distribution
+
+### Public Launch Campaign
+- **[Press kit](docs/launch/press-kit.md)** — elevator pitch, key facts, comparison table, brand assets
+- **[Announcement templates](docs/launch/announcement-templates.md)** — Twitter/X thread, Reddit/HN posts, YouTube demo script
+
+### Usage Analytics (Opt-In)
+- **Privacy-first** — no PII, no IPs, no session data — only deployment metadata
+- **Opt-in only** — disabled by default, set `ANALYTICS_ENABLED=true` to participate
+- **Anonymous instance ID** — one-way SHA256 hash, cannot be reversed
+- **What's collected** — version, deployment type, OS, architecture, sensor/plugin counts, uptime
 
 ## Features (Iteration 7 — E2E Testing, Performance & Final Release)
 

@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console, relay, billing, marketplace
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.services.rate_limiter import RateLimitMiddleware
@@ -135,3 +135,6 @@ app.include_router(plugins.router, prefix="/api/v1/plugins", tags=["plugins"])
 app.include_router(metrics.router, tags=["metrics"])
 app.include_router(export.router, prefix="/api/v1/export", tags=["export"])
 app.include_router(console.router, prefix="/api/v1/console", tags=["console"])
+app.include_router(relay.router, prefix="/api/v1/relay", tags=["relay"])
+app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
+app.include_router(marketplace.router, prefix="/api/v1/marketplace", tags=["marketplace"])

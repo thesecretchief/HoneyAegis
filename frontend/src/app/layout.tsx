@@ -43,6 +43,7 @@ export default function RootLayout({
               <NavItem href="/honey-tokens" label="Honey Tokens" />
               <NavItem href="/webhooks" label="Webhooks" />
               <NavItem href="/sensors" label="Sensors" />
+              <NavItem href="/marketplace" label="Marketplace" />
               <NavItem href="/config" label="Config" />
             </ul>
             <div className="mt-auto pt-4 border-t border-gray-800">
