@@ -39,26 +39,14 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
-  # Docker Image Scan (Trivy)
+  # Vulnerability Scan (Trivy)
   # ---------------------------------------------------------------------------
   trivy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build backend image for scanning
-        run: docker build -t honeyaegis-backend:scan ./backend
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: honeyaegis-backend:scan
-          format: table
-          exit-code: "0"
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-      - name: Run Trivy (application code only)
+      - name: Run Trivy filesystem scan (application code)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -66,6 +54,21 @@ jobs:
           format: table
           exit-code: "1"
           severity: CRITICAL
+          ignore-unfixed: true
+
+      - name: Build backend image for scanning
+        id: docker-build
+        run: docker build -t honeyaegis-backend:scan ./backend
+        continue-on-error: true
+
+      - name: Run Trivy image scan
+        if: steps.docker-build.outcome == 'success'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: honeyaegis-backend:scan
+          format: table
+          exit-code: "0"
+          severity: CRITICAL,HIGH
           ignore-unfixed: true
 
   # ---------------------------------------------------------------------------
