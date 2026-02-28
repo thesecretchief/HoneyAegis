@@ -9,10 +9,33 @@ CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ---------------------------------------------------------------------------
+-- Tenants (multi-tenant isolation)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tenants (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    logo_url VARCHAR(500),
+    primary_color VARCHAR(7) DEFAULT '#f59e0b',
+    display_name VARCHAR(255),
+    portal_domain VARCHAR(255),
+    config JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Default tenant (created on first boot)
+INSERT INTO tenants (slug, name, display_name, primary_color)
+VALUES ('default', 'Default Organization', 'HoneyAegis', '#f59e0b')
+ON CONFLICT (slug) DO NOTHING;
+
+-- ---------------------------------------------------------------------------
 -- Users (dashboard authentication)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     email VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255),
@@ -27,6 +50,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS sensors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     sensor_id VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     hostname VARCHAR(255),
@@ -43,6 +67,7 @@ CREATE TABLE IF NOT EXISTS sensors (
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     session_id VARCHAR(100) UNIQUE NOT NULL,
     sensor_id UUID REFERENCES sensors(id) ON DELETE SET NULL,
     protocol VARCHAR(20) NOT NULL,
@@ -147,6 +172,7 @@ CREATE TABLE IF NOT EXISTS ai_summaries (
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS alerts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     session_id UUID REFERENCES sessions(id) ON DELETE SET NULL,
     alert_type VARCHAR(50) NOT NULL,
     severity VARCHAR(20) NOT NULL DEFAULT 'medium',
@@ -171,3 +197,9 @@ CREATE INDEX IF NOT EXISTS idx_downloads_file_hash ON downloads (file_hash_sha25
 CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts (severity);
 CREATE INDEX IF NOT EXISTS idx_alerts_acknowledged ON alerts (acknowledged);
 CREATE INDEX IF NOT EXISTS idx_ai_summaries_session_id ON ai_summaries (session_id);
+
+-- Tenant isolation indexes
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_tenant_id ON sessions (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sensors_tenant_id ON sensors (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_alerts_tenant_id ON alerts (tenant_id);

@@ -1,4 +1,4 @@
-"""Event endpoints — attacker actions within sessions."""
+"""Event endpoints — attacker actions within sessions (tenant-scoped)."""
 
 import logging
 from uuid import UUID
@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
-from app.api.auth import get_current_user
+from app.api.auth import get_tenant_id
 from app.models.event import Event
-from app.models.user import User
+from app.models.session import Session
 from app.schemas.event import EventResponse
 
 logger = logging.getLogger(__name__)
@@ -25,9 +25,15 @@ async def list_events(
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
-    query = select(Event).order_by(Event.timestamp.desc())
+    # Events are scoped through their parent session's tenant_id
+    query = (
+        select(Event)
+        .join(Session, Event.session_id == Session.id)
+        .where(Session.tenant_id == tenant_id)
+        .order_by(Event.timestamp.desc())
+    )
     if session_id:
         query = query.where(Event.session_id == session_id)
     if event_type:

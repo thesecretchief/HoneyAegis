@@ -1,4 +1,6 @@
-"""Authentication endpoints."""
+"""Authentication endpoints + tenant isolation dependencies."""
+
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -36,6 +38,22 @@ async def get_current_user(
     return user
 
 
+async def get_tenant_id(
+    current_user: User = Depends(get_current_user),
+) -> UUID:
+    """Extract the tenant_id from the current user.
+
+    This is the core multi-tenant isolation dependency. Every tenant-scoped
+    API endpoint must depend on this to enforce row-level data isolation.
+    """
+    if current_user.tenant_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not assigned to any tenant",
+        )
+    return current_user.tenant_id
+
+
 @router.post("/login", response_model=Token)
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -51,7 +69,11 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": user.email})
+    token_data = {"sub": user.email}
+    if user.tenant_id:
+        token_data["tenant_id"] = str(user.tenant_id)
+
+    access_token = create_access_token(data=token_data)
     return Token(access_token=access_token, token_type="bearer")
 
 

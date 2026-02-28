@@ -12,10 +12,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
-from app.api.auth import get_current_user
+from app.api.auth import get_tenant_id
 from app.models.session import Session
 from app.models.command import Command
-from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +64,15 @@ def parse_ttylog(ttylog_path: Path) -> list[list]:
 async def get_session_replay(
     session_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Get asciinema-compatible replay data for a session.
 
     Returns asciicast v2 format JSON for use with asciinema-player.
     """
-    result = await db.execute(select(Session).where(Session.id == session_id))
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.tenant_id == tenant_id)
+    )
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -136,10 +137,12 @@ async def get_session_replay(
 async def get_session_commands(
     session_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(get_current_user),
+    tenant_id: UUID = Depends(get_tenant_id),
 ):
     """Get the list of commands executed in a session."""
-    result = await db.execute(select(Session).where(Session.id == session_id))
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.tenant_id == tenant_id)
+    )
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
