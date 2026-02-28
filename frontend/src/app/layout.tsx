@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export const metadata: Metadata = {
   title: "HoneyAegis Dashboard",
@@ -46,8 +47,9 @@ export default function RootLayout({
               <NavItem href="/marketplace" label="Marketplace" />
               <NavItem href="/config" label="Config" />
             </ul>
-            <div className="mt-auto pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-600">HoneyAegis v1.0.0</p>
+            <div className="mt-auto pt-4 border-t border-gray-800 space-y-2">
+              <LanguageSwitcher />
+              <p className="text-xs text-gray-600">HoneyAegis v1.2.0</p>
             </div>
           </nav>
           {/* Mobile nav */}

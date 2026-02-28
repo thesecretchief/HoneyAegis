@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console, relay, billing, marketplace
+from app.api import health, sessions, events, auth, alerts, replay, video, websocket, ai, sensors, config, tenants, reports, client_portal, honey_tokens, webhooks, plugins, metrics, export, console, relay, billing, marketplace, threat_intel, sandbox
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.services.rate_limiter import RateLimitMiddleware
@@ -138,3 +138,5 @@ app.include_router(console.router, prefix="/api/v1/console", tags=["console"])
 app.include_router(relay.router, prefix="/api/v1/relay", tags=["relay"])
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
 app.include_router(marketplace.router, prefix="/api/v1/marketplace", tags=["marketplace"])
+app.include_router(threat_intel.router, prefix="/api/v1/threat-intel", tags=["threat-intel"])
+app.include_router(sandbox.router, prefix="/api/v1/sandbox", tags=["sandbox"])

