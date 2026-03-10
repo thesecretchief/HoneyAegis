@@ -11,7 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import select, cast, literal
+from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import async_session
@@ -37,7 +38,8 @@ async def _persist_geoip(db: AsyncSession, ip: str) -> dict:
     from app.models.geoip import GeoIPCache
 
     # Check cache first
-    result = await db.execute(select(GeoIPCache).where(GeoIPCache.ip == ip))
+    result = await db.execute(
+    select(GeoIPCache).where(GeoIPCache.ip == cast(literal(ip), INET)))
     cached = result.scalar_one_or_none()
     if cached:
         return {

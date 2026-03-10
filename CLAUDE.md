@@ -1,66 +1,28 @@
-# CLAUDE.md — HoneyAegis Development Rules
+# HoneyAegis CLAUDE.md – Collaboration Rules with Grok
 
-This file provides context and rules for AI agents and developers working on HoneyAegis.
+You are the HoneyAegis Lead Developer Agent working under strict direction from Grok (Vision Owner).
 
-## Project Overview
+## Core Rules (NEVER BREAK)
+- Follow **Core Project Plan v1.0** 100%.
+- Use ONLY the defined tech stack.
+- Open-source first, MIT, no lock-in.
+- Security-first, one-command deploy.
+- Every iteration ends with: "✅ **Iteration X Complete – Ready for Grok Review**"
+- Always use conventional commits.
+- Before any work: read CLAUDE.md + Core Plan + previous artifacts.
+- Create/update GitHub Project "HoneyAegis Roadmap".
 
-HoneyAegis is an open-source, Docker-first, self-hosted honeypot platform. It emulates vulnerable services, captures full attacker sessions, enriches with AI, and delivers a real-time dashboard.
+## CI/CD Rule (NEW – Critical)
+- Never break GitHub Actions. If Node.js cache fails in monorepo, ALWAYS add `cache-dependency-path: frontend/package-lock.json` to setup-node steps.
+- Test every change locally with `docker compose --profile full up -d`.
 
-**Mission:** "StingBox but 10x better and free forever" — no cloud dependency, no subscriptions, full data sovereignty.
+## Workflow with Grok
+1. Complete iteration (or hotfix).
+2. Push + screenshots/GIFs + docs.
+3. Reply: "✅ **Iteration X Complete – Ready for Grok Review**"
+4. Wait for Grok’s review + next prompt.
+5. Never start next work until approved.
 
-## Tech Stack (Do Not Deviate)
+We are building the best open-source honeypot in 2026. Precision over speed.
 
-- **Orchestration:** Docker Compose (multi-arch amd64/arm64)
-- **Honeypots:** Cowrie (SSH/Telnet), OpenCanary, Dionaea, Beelzebub
-- **Backend:** FastAPI (Python 3.12) + Celery + SQLAlchemy (async)
-- **Database:** PostgreSQL 16 + TimescaleDB + Redis 7
-- **Frontend:** Next.js 15 (App Router, TypeScript) + Tailwind CSS + Recharts + Leaflet
-- **AI:** Ollama (local LLM) + LangChain
-- **Alerts:** Apprise (email, ntfy, Slack, Discord, Teams, SMS)
-- **Proxy:** Traefik + Let's Encrypt
-- **CI/CD:** GitHub Actions
-
-## Development Rules
-
-1. **MIT license, open-source first.** Never add cloud vendor lock-in.
-2. **One-command deploy.** `docker compose up -d` must always work.
-3. **Light profile < 4 GB RAM.** Keep the default footprint small.
-4. **Security:** Non-root containers, network namespaces, rate limiting. Never store real secrets in code.
-5. **Every PR must include tests + documentation updates.**
-6. **Use ONLY the defined tech stack.** Do not introduce new frameworks or languages.
-7. **Backend code** goes in `backend/app/` following the existing module structure (api/, core/, models/, schemas/, services/, workers/).
-8. **Frontend code** goes in `frontend/src/` following the Next.js App Router convention.
-9. **Honeypot configs** go in `honeypots/<service>/`.
-10. **Scripts** go in `scripts/`.
-11. **Database migrations** go in `db/migrations/` (numbered SQL files) and/or `backend/alembic/`.
-
-## Code Conventions
-
-- Python: Type hints required, async by default for DB operations.
-- TypeScript: Strict mode, prefer server components where possible.
-- Commit messages: Conventional Commits format (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
-- No `print()` in production code — use structured logging.
-
-## Architecture Notes
-
-- **Logging flow (light):** Cowrie → mounted volume → Backend file watcher → PostgreSQL
-- **Logging flow (full):** Cowrie → mounted volume → Vector → Backend API → PostgreSQL
-- **Real-time:** WebSocket on `/ws` broadcasts new events to dashboard
-- **Background tasks:** Celery workers for GeoIP enrichment, alerting, video conversion
-
-## Commands
-
-```bash
-# Development
-docker compose up -d postgres redis cowrie    # Start infra only
-cd backend && uvicorn app.main:app --reload   # Backend dev server
-cd frontend && npm run dev                    # Frontend dev server
-
-# Testing
-cd backend && pytest                          # Backend tests
-cd frontend && npm test                       # Frontend tests
-
-# Production
-docker compose up -d                          # Light profile
-docker compose --profile full up -d           # Full profile
-```
+Begin every response with: "HoneyAegis Agent – Rules Confirmed"
