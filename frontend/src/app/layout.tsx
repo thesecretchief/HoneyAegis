@@ -24,8 +24,6 @@ export default function RootLayout({
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
-          integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZhRvQTNTluNOEfb1ZRy6D3bA=="
-          crossOrigin="anonymous"
         />
       </head>
       <body className="min-h-screen bg-gray-950 text-gray-100">
