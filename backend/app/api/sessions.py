@@ -45,6 +45,10 @@ async def list_sessions(
         count_query = count_query.where(Session.src_ip == src_ip)
     total = (await db.execute(count_query)).scalar()
 
+    for s in sessions:
+        if getattr(s, "src_ip", None) is not None:
+            s.src_ip = str(s.src_ip)
+
     return SessionListResponse(sessions=sessions, total=total or 0)
 
 
